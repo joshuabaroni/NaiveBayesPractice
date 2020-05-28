@@ -1,0 +1,9 @@
+@relation weight-height
+
+@attribute height REAL
+@attribute weight REAL
+@attribute Class {'Female','Male'}
+
+@data
+72,241,Male
+62,230,Female

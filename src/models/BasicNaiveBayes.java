@@ -1,0 +1,241 @@
+package models;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+
+import weka.core.Attribute;
+import weka.core.Instances;
+import weka.core.converters.ArffLoader;
+
+/**
+ * Handles basic yes/no inputs
+ * 
+ * @author Josh Baroni
+ *
+ */
+public class BasicNaiveBayes {
+
+//    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
+//    private String[] classes = {republican, democrat}; // TODO
+    private String[] inputKeys; // keys correspond to attribute
+    private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
+
+    public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
+
+//--------------------------------Constructors--------------------------------    
+
+    /**
+     * Builds empty key map to prep for train data insertion
+     * 
+     * @param inputKeys
+     */
+
+    public BasicNaiveBayes() {
+        values = new HashMap<>();
+        model = new HashMap<>();
+    }
+
+//------------------------------Instance Methods------------------------------
+
+    // --------------------private---------------------
+
+    private void reweight() { // reweights this set after every layer
+        // TODO reweight after layer of size "NUM_DATA_INST_PER_LAYER"
+    }
+
+    // --------------------public----------------------
+
+    public Map<String, Double[]> getModel() {
+        return model;
+    }
+
+    public BasicNaiveBayes buildMap(String[] inputs, double[][] dataPts) {
+        this.inputKeys = inputs;
+        values = new HashMap<>();
+        for (int i = 0; i < dataPts[0].length; i++) {
+            Double[] temp = new Double[dataPts.length];
+            for (int j = 0; j < dataPts.length; j++) {
+                temp[j] = dataPts[j][i];
+            }
+            values.put(inputKeys[i], temp);
+        }
+        return this;
+    }
+
+    public BasicNaiveBayes train() throws InvalidDataValueException {
+        double sumValueClass; // 0th index if final = true, 1st if final = false
+        double sumValueNotClass;
+        for (int i = 0; i < inputKeys.length - 1; i++) { // test instance iterator
+            sumValueClass = 0.0;
+            sumValueNotClass = 0.0;
+            for (int j1 = 0; j1 < values.get(inputKeys[i]).length; j1++) { // data points in this test instance
+                String str = inputKeys[inputKeys.length - 1];
+                Double classification = values.get(str)[j1];
+                if (classification == 1.0) {
+                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
+                        sumValueClass += values.get(inputKeys[i])[j1];
+                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
+                        sumValueClass += values.get(inputKeys[i])[j1];
+                    } else {
+                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
+                            sumValueClass += 0.5;
+                        } else {
+                            throw new InvalidDataValueException();
+                        }
+                    }
+                } else if (classification == 0.0) {
+                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
+                        sumValueNotClass += values.get(inputKeys[i])[j1];
+                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
+                        sumValueNotClass += values.get(inputKeys[i])[j1];
+                    } else {
+                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
+                            sumValueNotClass += 0.5;
+                        } else {
+                            throw new InvalidDataValueException();
+                        }
+                    }
+                } else {
+                    throw new InvalidDataValueException();
+                }
+            }
+//            System.out.println("");
+            Double[] thisOut = { sumValueClass / values.get(inputKeys[i]).length,
+                    sumValueNotClass / values.get(inputKeys[i]).length };
+            model.put(inputKeys[i], thisOut); // thisOut[0] = p(Yes|R), thisOut[1] = p(No|R)
+        }
+        return this;
+    }
+
+//-------------------------------Static Methods-------------------------------    
+
+    // ----------------private------------------
+
+    /**
+     * Alter this piece according to your data. Unsure how to make this dynamic
+     * 
+     * @param rawFileDataPts
+     * @return
+     * @throws InvalidDataValueException
+     */
+    private static Double[][] translateData(String[][] rawFileDataPts) throws InvalidDataValueException { // called by
+                                                                                                          // translateData
+        // pXY[currentTrainInstance][Value]
+        String[] finalClasses = { "republican", "democrat" }; // 0.0 = republican, 1.0 = democrat
+        Double[][] pXY = new Double[rawFileDataPts.length][rawFileDataPts[0].length];
+        for (int i = 0; i < rawFileDataPts.length; i++) {
+            for (int j = 0; j < rawFileDataPts[i].length - 1; i++) {
+                String cur = rawFileDataPts[i][j];
+                if (cur == "y") {
+                    pXY[i][j] = 1.0;
+                } else if (cur == "n") {
+                    pXY[i][j] = 0.0;
+                } else {
+                    pXY[i][j] = 0.5;
+                }
+            }
+            if (rawFileDataPts[i][rawFileDataPts[i].length - 1] == finalClasses[0]) {
+                pXY[i][pXY.length - 1] = 1.0;
+            } else if (rawFileDataPts[i][rawFileDataPts[i].length - 1] == finalClasses[1]) {
+                pXY[i][pXY.length - 1] = 0.0;
+            } else {
+                throw new InvalidDataValueException();
+            }
+        }
+        return pXY;
+    }
+
+    // ----------------public-------------------
+
+    public static Pair<String, Double> predictClass(BasicNaiveBayes bnb, Scanner ui) {
+        System.out.println("Respond to the following prompts by typing 'y' or 'n' and hitting the <ENTER> key.");
+        String[] keyChain = bnb.model.keySet().toArray(new String[bnb.model.keySet().size()]);
+        Double[] responses = new Double[keyChain.length - 1];
+        for (int i = 0; i < responses.length; i++) {
+            System.out.print(keyChain[i] + ": ");
+            String response = ui.nextLine();
+            if (response.equalsIgnoreCase("y")) {
+                responses[i] = 1.0;
+            } else if (response.equalsIgnoreCase("n")) {
+                responses[i] = 0.0;
+            } else {
+                responses[i] = 0.5;
+            }
+        }
+        Double[] finalProb = { 1.0, 1.0 };
+        for (int i = 0; i < responses.length; i++) {
+            if (responses[i] == 1.0) {
+                if (bnb.model.get(keyChain[i])[0] < bnb.model.get(keyChain[i])[1]) {
+                    finalProb[0] += bnb.model.get(keyChain[i])[0];
+                    finalProb[1] += bnb.model.get(keyChain[i])[1];
+                }
+            }
+        }
+        finalProb[0] /= (finalProb[0] + finalProb[1] + 1);
+        finalProb[1] /= (finalProb[0] + finalProb[1] + 1);
+        // get results
+        Pair<String, Double> result;
+        result = (finalProb[0] > finalProb[1]) ? new Pair<>("Republican", finalProb[0])
+                : new Pair<>("Democrat", finalProb[1]); // TODO change hardset to attribute
+        return result;
+    }
+
+    public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
+        ArffLoader.ArffReader reader = new ArffLoader.ArffReader(new BufferedReader(new FileReader(file)));
+        Instances data = reader.getData();
+        data.setClassIndex(data.numAttributes() - 1);
+
+        BasicNaiveBayes bnb = new BasicNaiveBayes();
+        List<Attribute> attr = Collections.list(data.enumerateAttributes());
+//        ArrayList<String[]> dataPts = new ArrayList<>();
+
+        // changes A<S> attr to S[]
+        // changes A<S[]> to S[][]
+        String[] attrArray = new String[attr.size() + 1]; // last is for class
+        double[][] dataPtsArray = new double[data.size()][attr.size()];
+
+        int index = 0;
+        while (index < data.size()) {
+            dataPtsArray[index] = data.get(index).toDoubleArray();
+//            System.out.println("Current line #: " + reader.getLineNo());
+            index++;
+        }
+
+        for (int i = 0; i < attr.size(); i++) {
+            attrArray[i] = attr.get(i).name();
+//            dataPtsArray[i] = dataPts.get(i);
+        }
+
+        attrArray[attrArray.length - 1] = "Class";
+        bnb.buildMap(attrArray, dataPtsArray);
+        return bnb;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("user.dir"));
+        args = new String[1];
+        args[0] = "src/testdata/voting_train.arff";
+        File testDataFile = new File(args[0]);
+        BasicNaiveBayes bnb = null;
+        try {
+            bnb = naiveBayesBuilder(testDataFile).train();
+        } catch (InvalidDataValueException | IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Done training model: " + bnb.toString());
+        Scanner ui = new Scanner(System.in);
+        Pair<String, Double> result = predictClass(bnb, ui);
+        System.out.println("Based on your responses, I am "
+                + String.format("%.2f", result.val2 * 100)
+                + "% sure you identify as a " + result.val1);
+        ui.close();
+    }
+}
