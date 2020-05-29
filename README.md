@@ -1,5 +1,5 @@
 # NaiveBayesPractice
-Basic Naive Bayes AI approach written in Java
+Basic Naive Bayes ML approach written in Java
 
 ## Purpose of This Project
 - Naive Bayes is a stepping stone algorithm to understand how to effectively utilize machine learning. It takes on a simple approach: Predict the class of a new input response instance based off of similar instances whose classes are known.
@@ -19,8 +19,6 @@ Basic Naive Bayes AI approach written in Java
 ### Overview
 - Using probability as its primary tool, Naive Bayes compares previous responses and their correlation to a class output to predict what the final response of a new class will be.
 - Any new output successfully predicted will serve as reinforcement learning to improve the accuracy of the algorithm's future predictions.
-
-
 
 ### Voting Model
 - The current model build is trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
