@@ -2,13 +2,7 @@
 Basic Naive Bayes AI approach written in Java
 
 ## Purpose of This Project
-- Naive Bayes is one of the most fundamental AI algorithms in existence. It takes on a simple approach: Predict the class of a new input response instance based off of similar instances whose classes are known.
-
-## Project Concept
-### Overview
-- Using probability as its primary tool, Naive Bayes compares previous responses and their correlation to a class output to predict what the final response of a new class will be.
-- Any new output successfully predicted will serve as reinforcement learning to improve the accuracy of the algorithm's future predictions.
-
+- Naive Bayes is a stepping stone algorithm to understand how to effectively utilize machine learning. It takes on a simple approach: Predict the class of a new input response instance based off of similar instances whose classes are known.
 ### Bayes Theorem
 - P(A|C) = [P(C|A)*P(A)]/[P(C)]
   - Posterior: P(A | C)
@@ -20,6 +14,13 @@ Basic Naive Bayes AI approach written in Java
 - P(C|A) Likelihood - Describes how well the model predicts the data
 - P(C) Normalizing Constant - The constant that makes the posterior density integrate to one
 - P(A|C) Posterior Probability - Represents the degree to which we believe a given model accurately describes the situation given the available data and all of our prior information
+
+## Project Concept
+### Overview
+- Using probability as its primary tool, Naive Bayes compares previous responses and their correlation to a class output to predict what the final response of a new class will be.
+- Any new output successfully predicted will serve as reinforcement learning to improve the accuracy of the algorithm's future predictions.
+
+
 
 ### Voting Model
 - The current model build is trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
