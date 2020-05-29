@@ -1,5 +1,5 @@
 # NaiveBayesPractice
-Basic Naive Bayes ML approach written in Java
+Basic Naive Bayes ML model written in Java
 
 ## Purpose of This Project
 - Naive Bayes is a stepping stone algorithm to understand how to effectively utilize machine learning. It takes on a simple approach: Predict the class of a new input response instance based off of similar instances whose classes are known.
