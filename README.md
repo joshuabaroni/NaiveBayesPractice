@@ -23,7 +23,7 @@ Basic Naive Bayes AI approach written in Java
 
 ### Voting Model
 - The current model build is trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
-  - This build features a user console interface that not only presents its prediction based on the questionnaire but also asks the user to verify the accuracy of its outcome. The algorithm will then reweight the model according to the user's feedback.
+- This build features a user console interface that not only presents its prediction based on the questionnaire but also asks the user to verify the accuracy of its outcome. The algorithm will then reweight the model according to the user's feedback.
 - As the model's base algorithm is improved, it should more widely accept data from any context formatted into .arff files.
 
 ## Technologies
