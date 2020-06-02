@@ -2,6 +2,7 @@ package models;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
@@ -70,23 +71,61 @@ public class BasicNaiveBayes {
         return this;
     }
 
+    public Pair<String, Double> predictClass(String[] keyChain, Double[] responses) {
+        // need keyChain because keys will not be in the same order as this.inputKeys
+        Double[] finalProb = { 0.5, 0.5 };
+        double yes = 0;
+        double no = 0;
+        for (int i = 0; i < responses.length; i++) {
+            if (responses[i] == 1.0) { // factor in 'yes' responses
+//                if (this.model.get(keyChain[i])[0] < this.model.get(keyChain[i])[1]) {
+                    double tempDem = this.model.get(keyChain[i])[1];
+                    double tempRep = this.model.get(keyChain[i])[0];
+                    finalProb[1] += tempDem;
+                    finalProb[0] += tempRep;
+                    yes++;
+            } else if (responses[i] == 0.0) {
+//                } else if (this.model.get(keyChain[i])[0] > this.model.get(keyChain[i])[1]) {
+                    double tempDem = 1.0 - this.model.get(keyChain[i])[1];
+                    double tempRep = 1.0 - this.model.get(keyChain[i])[0];
+                    finalProb[0] += tempDem;
+                    finalProb[1] += tempRep;
+                    no++;
+            }
+            else {
+                continue;
+            }
+        }
+        finalProb[0] *= (yes / (yes + no)); // P(C|A)
+        finalProb[1] *= (no / (yes + no));
+        // get results
+        Pair<String, Double> result;
+        // TODO generalize
+        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1])); // TODO change hardset to attribute
+        return result;
+    }
+
     public BasicNaiveBayes train() throws InvalidDataValueException {
-        double sumValueClass; // 0th index if final = true, 1st if final = false
-        double sumValueNotClass;
+        double sumValueClass, sumValueNotClass; // 0th index if final = true, 1st if final = false
+        int numClass = 0, numNotClass = 0;
         for (int i = 0; i < inputKeys.length - 1; i++) { // test instance iterator
             sumValueClass = 0.0;
             sumValueNotClass = 0.0;
+
             for (int j1 = 0; j1 < values.get(inputKeys[i]).length; j1++) { // data points in this test instance
                 String str = inputKeys[inputKeys.length - 1];
                 Double classification = values.get(str)[j1];
                 if (classification == 1.0) {
                     if (values.get(inputKeys[i])[j1] == 1.0) { // if true
                         sumValueClass += values.get(inputKeys[i])[j1];
+                        numClass++;
                     } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
-                        sumValueClass += values.get(inputKeys[i])[j1];
+//                        sumValueClass += values.get(inputKeys[i])[j1];
+                        numClass++;
                     } else {
                         if (Double.isNaN(values.get(inputKeys[i])[j1])) {
-                            sumValueClass += 0.5;
+//                            sumValueClass += 0.5;
                         } else {
                             throw new InvalidDataValueException();
                         }
@@ -94,11 +133,13 @@ public class BasicNaiveBayes {
                 } else if (classification == 0.0) {
                     if (values.get(inputKeys[i])[j1] == 1.0) { // if true
                         sumValueNotClass += values.get(inputKeys[i])[j1];
+                        numNotClass++;
                     } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
-                        sumValueNotClass += values.get(inputKeys[i])[j1];
+//                        sumValueNotClass += values.get(inputKeys[i])[j1];
+                        numNotClass++;
                     } else {
                         if (Double.isNaN(values.get(inputKeys[i])[j1])) {
-                            sumValueNotClass += 0.5;
+//                            sumValueNotClass += 0.5;
                         } else {
                             throw new InvalidDataValueException();
                         }
@@ -108,8 +149,7 @@ public class BasicNaiveBayes {
                 }
             }
 //            System.out.println("");
-            Double[] thisOut = { sumValueClass / values.get(inputKeys[i]).length,
-                    sumValueNotClass / values.get(inputKeys[i]).length };
+            Double[] thisOut = { sumValueClass / numClass, sumValueNotClass / numNotClass };
             model.put(inputKeys[i], thisOut); // thisOut[0] = p(Yes|R), thisOut[1] = p(No|R)
         }
         return this;
@@ -153,9 +193,46 @@ public class BasicNaiveBayes {
         return pXY;
     }
 
+    private static Instances loadArff(File file) throws FileNotFoundException, IOException {
+        ArffLoader.ArffReader reader = new ArffLoader.ArffReader(new BufferedReader(new FileReader(file)));
+        Instances data = reader.getData();
+        data.setClassIndex(data.numAttributes() - 1);
+        return data;
+    }
+
     // ----------------public-------------------
 
-    public static Pair<String, Double> predictClass(BasicNaiveBayes bnb, Scanner ui) {
+    /**
+     * designed to test only the first line in a <test>.arff
+     * 
+     * @param bnb
+     * @param file
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static Pair<String, Double> predictClassFile(BasicNaiveBayes bnb, File file)
+            throws FileNotFoundException, IOException {
+        Instances data = loadArff(file);
+        List<Attribute> attr = Collections.list(data.enumerateAttributes());
+
+        String[] attrArray = new String[attr.size() + 1]; // last is for class
+        Double[] testDataPtsArray = new Double[attr.size()];
+
+        double[] temp = data.get(0).toDoubleArray();
+
+        for (int i = 0; i < temp.length - 1; i++) // deep copy double[] to Double[]
+            testDataPtsArray[i] = temp[i];
+
+        for (int i = 0; i < attr.size(); i++) {
+            attrArray[i] = attr.get(i).name();
+        }
+
+        attrArray[attrArray.length - 1] = "Class";
+        return bnb.predictClass(attrArray, testDataPtsArray);
+    }
+
+    public static Pair<String, Double> predictClassUi(BasicNaiveBayes bnb, Scanner ui) {
         System.out.println("Respond to the following prompts by typing 'y' or 'n' and hitting the <ENTER> key.");
         String[] keyChain = bnb.model.keySet().toArray(new String[bnb.model.keySet().size()]);
         Double[] responses = new Double[keyChain.length - 1];
@@ -170,28 +247,11 @@ public class BasicNaiveBayes {
                 responses[i] = 0.5;
             }
         }
-        Double[] finalProb = { 1.0, 1.0 };
-        for (int i = 0; i < responses.length; i++) {
-            if (responses[i] == 1.0) {
-                if (bnb.model.get(keyChain[i])[0] < bnb.model.get(keyChain[i])[1]) {
-                    finalProb[0] += bnb.model.get(keyChain[i])[0];
-                    finalProb[1] += bnb.model.get(keyChain[i])[1];
-                }
-            }
-        }
-        finalProb[0] /= (finalProb[0] + finalProb[1] + 1);
-        finalProb[1] /= (finalProb[0] + finalProb[1] + 1);
-        // get results
-        Pair<String, Double> result;
-        result = (finalProb[0] > finalProb[1]) ? new Pair<>("Republican", finalProb[0])
-                : new Pair<>("Democrat", finalProb[1]); // TODO change hardset to attribute
-        return result;
+        return bnb.predictClass(keyChain, responses);
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
-        ArffLoader.ArffReader reader = new ArffLoader.ArffReader(new BufferedReader(new FileReader(file)));
-        Instances data = reader.getData();
-        data.setClassIndex(data.numAttributes() - 1);
+        Instances data = loadArff(file);
 
         BasicNaiveBayes bnb = new BasicNaiveBayes();
         List<Attribute> attr = Collections.list(data.enumerateAttributes());
@@ -221,8 +281,9 @@ public class BasicNaiveBayes {
 
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
-        args = new String[1];
+        args = new String[2];
         args[0] = "src/testdata/voting_train.arff";
+        args[1] = "src/testdata/voting_test.arff";
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
@@ -231,11 +292,20 @@ public class BasicNaiveBayes {
             e.printStackTrace();
         }
         System.out.println("Done training model: " + bnb.toString());
-        Scanner ui = new Scanner(System.in);
-        Pair<String, Double> result = predictClass(bnb, ui);
-        System.out.println("Based on your responses, I am "
-                + String.format("%.2f", result.val2 * 100)
-                + "% sure you identify as a " + result.val1);
-        ui.close();
+//        Scanner ui = new Scanner(System.in);
+        // TODO load from arff
+
+        Pair<String, Double> result;
+        try {
+            result = predictClassFile(bnb, new File(args[1]));
+//        Pair<String, Double> result = predictClassUi(bnb, ui);
+            System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
+                    + "% sure you identify as a " + result.val1);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+//      ui.close();
+
     }
 }
