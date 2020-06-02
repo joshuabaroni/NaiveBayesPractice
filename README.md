@@ -22,8 +22,9 @@ Basic Naive Bayes ML model written in Java
 
 ### Voting Model
 - The current model build is trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
+- Training data used is from the [1984 voter census](https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
 - This build features a user console interface that not only presents its prediction based on the questionnaire but also asks the user to verify the accuracy of its outcome. The algorithm will then reweight the model according to the user's feedback.
 - As the model's base algorithm is improved, it should more widely accept data from any context formatted into .arff files.
 
 ## Technologies
-- Based off of analysis of the Weka Naive Bayes model: https://weka.sourceforge.io/doc.dev/weka/classifiers/bayes/NaiveBayes.html
+- Based off of analysis of the [Weka Naive Bayes model](https://weka.sourceforge.io/doc.dev/weka/classifiers/bayes/NaiveBayes.html)
