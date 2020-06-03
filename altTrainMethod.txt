@@ -1,0 +1,45 @@
+        double sumValueClass, sumValueNotClass; // 0th index if final = true, 1st if final = false
+        int numClass = 0, numNotClass = 0;
+        for (int i = 0; i < inputKeys.length - 1; i++) { // test instance iterator
+            sumValueClass = 0.0;
+            sumValueNotClass = 0.0;
+
+            for (int j1 = 0; j1 < values.get(inputKeys[i]).length; j1++) { // data points in this test instance
+                String str = inputKeys[inputKeys.length - 1];
+                Double classification = values.get(str)[j1];
+                if (classification == 1.0) {
+                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
+                        sumValueClass += values.get(inputKeys[i])[j1];
+                        numClass++;
+                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
+//                        sumValueClass += values.get(inputKeys[i])[j1];
+                        numClass++;
+                    } else {
+                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
+//                            sumValueClass += 0.5;
+                        } else {
+                            throw new InvalidDataValueException();
+                        }
+                    }
+                } else if (classification == 0.0) {
+                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
+                        sumValueNotClass += values.get(inputKeys[i])[j1];
+                        numNotClass++;
+                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
+//                        sumValueNotClass += values.get(inputKeys[i])[j1];
+                        numNotClass++;
+                    } else {
+                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
+//                            sumValueNotClass += 0.5;
+                        } else {
+                            throw new InvalidDataValueException();
+                        }
+                    }
+                } else {
+                    throw new InvalidDataValueException();
+                }
+            }
+//            System.out.println("");
+            Double[] thisOut = { sumValueClass / numClass, sumValueNotClass / numNotClass };
+            model.put(inputKeys[i], thisOut); // thisOut[0] = p(Yes|R), thisOut[1] = p(No|R)
+        }

@@ -25,10 +25,8 @@ import weka.core.converters.ArffLoader;
 public class BasicNaiveBayes {
 
 //    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
-//    private String[] classes = {republican, democrat}; // TODO
     private String[] inputKeys; // keys correspond to attribute
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
-    public int n;
     public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
 
 //--------------------------------Constructors--------------------------------    
@@ -53,13 +51,18 @@ public class BasicNaiveBayes {
             throw new UntrainedModelException();
         }
         for (String i : inputKeys) {
-            Double[] temp = model.get(i);
-            if ((temp[0] > temp[1] && isCorrect) || (temp[0] < temp[1] && !isCorrect)) {
-                temp[0] *= 1 + (1 / model.size());
-                temp[1] /= 1 + (1 / model.size());
-            } else if ((temp[0] < temp[1] && isCorrect) || (temp[0] > temp[1] && !isCorrect)) {
-                temp[1] *= 1 + (1 / model.size());
-                temp[0] /= 1 + (1 / model.size());
+            if (i.equalsIgnoreCase("class")) {
+                continue;
+            } else {
+                Double[] temp = model.get(i);
+                if ((temp[0] > temp[1] && isCorrect) || (temp[0] < temp[1] && !isCorrect)) {
+                    temp[0] *= 1.0 + (1.0 / model.get(i).length);
+                    temp[1] /= 1.0 + (1.0 / model.get(i).length);
+                } else if ((temp[0] < temp[1] && isCorrect) || (temp[0] > temp[1] && !isCorrect)) {
+                    temp[1] *= 1.0 + (1.0 / model.get(i).length);
+                    temp[0] /= 1.0 + (1.0 / model.get(i).length);
+                }
+                model.put(i, temp);
             }
         }
         // re-weight after layer of size "NUM_DATA_INST_PER_LAYER"
@@ -84,85 +87,82 @@ public class BasicNaiveBayes {
         return this;
     }
 
-    public Pair<String, Double> predictClass(String[] keyChain, Double[] responses) {
+    public Double[] predictClass(String[] keyChain, Double[] responses) {
         // need keyChain because keys will not be in the same order as this.inputKeys
         Double[] finalProb = { 0.5, 0.5 };
         double yes = 0;
         double no = 0;
         for (int i = 0; i < responses.length; i++) {
-            if (responses[i] == 1.0) { // factor in 'yes' responses
+            if (Double.isNaN(responses[i])) {
+                continue;
+            } else if (responses[i] == 1.0) { // factor in 'yes' responses
 //                if (this.model.get(keyChain[i])[0] < this.model.get(keyChain[i])[1]) {
-                double tempDem = this.model.get(keyChain[i])[1];
-                double tempRep = this.model.get(keyChain[i])[0];
-                finalProb[1] += tempDem;
-                finalProb[0] += tempRep;
-                yes++;
+                double temp_1 = this.model.get(keyChain[i])[1];
+                double temp_0 = this.model.get(keyChain[i])[0];
+                if (Double.isNaN(temp_1) || Double.isNaN(temp_0)) {
+                    continue;
+                } else {
+                    finalProb[1] += temp_1;
+                    finalProb[0] += temp_0;
+                    yes++;
+                }
             } else if (responses[i] == 0.0) {
 //                } else if (this.model.get(keyChain[i])[0] > this.model.get(keyChain[i])[1]) {
-                double tempDem = 1.0 - this.model.get(keyChain[i])[1];
-                double tempRep = 1.0 - this.model.get(keyChain[i])[0];
-                finalProb[0] += tempDem;
-                finalProb[1] += tempRep;
-                no++;
+                double temp_1 = 1.0 - this.model.get(keyChain[i])[1];
+                double temp_0 = 1.0 - this.model.get(keyChain[i])[0];
+                if (Double.isNaN(temp_1) || Double.isNaN(temp_0)) {
+                    continue;
+                } else {
+                    finalProb[0] += temp_1;
+                    finalProb[1] += temp_0;
+                    no++;
+                }
             } else {
                 continue;
             }
         }
         finalProb[0] *= (yes / (yes + no)); // P(C|A)
         finalProb[1] *= (no / (yes + no));
-        // get results
-        Pair<String, Double> result;
-        // TODO generalize category_0, category_1
-        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
-        return result;
+        return finalProb;
     }
 
     public BasicNaiveBayes train() throws InvalidDataValueException {
-        double sumValueClass, sumValueNotClass; // 0th index if final = true, 1st if final = false
-        int numClass = 0, numNotClass = 0;
-        for (int i = 0; i < inputKeys.length - 1; i++) { // test instance iterator
-            sumValueClass = 0.0;
-            sumValueNotClass = 0.0;
-
-            for (int j1 = 0; j1 < values.get(inputKeys[i]).length; j1++) { // data points in this test instance
-                String str = inputKeys[inputKeys.length - 1];
-                Double classification = values.get(str)[j1];
-                if (classification == 1.0) {
-                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
-                        sumValueClass += values.get(inputKeys[i])[j1];
-                        numClass++;
-                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
-//                        sumValueClass += values.get(inputKeys[i])[j1];
-                        numClass++;
-                    } else {
-                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
-//                            sumValueClass += 0.5;
-                        } else {
-                            throw new InvalidDataValueException();
-                        }
-                    }
-                } else if (classification == 0.0) {
-                    if (values.get(inputKeys[i])[j1] == 1.0) { // if true
-                        sumValueNotClass += values.get(inputKeys[i])[j1];
-                        numNotClass++;
-                    } else if (values.get(inputKeys[i])[j1] == 0.0) { // if false
-//                        sumValueNotClass += values.get(inputKeys[i])[j1];
-                        numNotClass++;
-                    } else {
-                        if (Double.isNaN(values.get(inputKeys[i])[j1])) {
-//                            sumValueNotClass += 0.5;
-                        } else {
-                            throw new InvalidDataValueException();
-                        }
-                    }
+        // width first (instance iterator; covers all keywords in a model instance)
+        for (int i = 0; i < values.get("Class").length; i++) {
+            // depth second (keyword iterator; steps through each keyword in an instance
+            Double[] thisInstance = new Double[inputKeys.length - 1];
+            for (int j0 = 0; j0 < inputKeys.length; j0++) {
+                if (inputKeys[j0].equalsIgnoreCase("class")) {
+                    continue;
                 } else {
-                    throw new InvalidDataValueException();
+                    thisInstance[j0] = values.get(inputKeys[j0])[i];
                 }
             }
-//            System.out.println("");
-            Double[] thisOut = { sumValueClass / numClass, sumValueNotClass / numNotClass };
-            model.put(inputKeys[i], thisOut); // thisOut[0] = p(Yes|R), thisOut[1] = p(No|R)
+            // reweight after every instance
+            Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
+            if (i > 0) { // cannot reweight on first instance
+                Double[] temp = this.predictClass(inputKeys, thisInstance);
+                double p1 = (temp[1] / (temp[0] + temp[1]));
+                double p0 = (temp[0] / (temp[0] + temp[1]));
+                if (classification == 1.0 && p0 > p1) {
+                    this.reweight(true);
+                } else {//if (classification == 0.0 && p0 > p1) {
+                    this.reweight(false);
+                }
+//                else {
+//                    throw new InvalidDataValueException(); // TODO throw if high inaccuracy
+//                }
+            } else {
+                for (String j1 : inputKeys) {
+                    if (classification == 1.0) // isFirstClass
+                        model.put(j1, new Double[] { values.get(j1)[i], Math.abs(1 - values.get(j1)[i]) });
+                    else if (classification == 0.0) // !isFirstClass
+                        model.put(j1, new Double[] { Math.abs(1 - values.get(j1)[i]), values.get(j1)[i] });
+                }
+            }
+            if (i == 28 || i == 256 || i == 432) {
+                System.out.println("checkpoint");
+            }
         }
         return this;
     }
@@ -207,7 +207,12 @@ public class BasicNaiveBayes {
         }
 
         attrArray[attrArray.length - 1] = "Class";
-        return bnb.predictClass(attrArray, testDataPtsArray);
+        Double[] finalProb = bnb.predictClass(attrArray, testDataPtsArray);
+        // get results
+        Pair<String, Double> result;
+        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
+        return result;
     }
 
     public static Pair<String, Double> predictClassUi(BasicNaiveBayes bnb, Scanner ui) {
@@ -225,7 +230,12 @@ public class BasicNaiveBayes {
                 responses[i] = 0.5;
             }
         }
-        return bnb.predictClass(keyChain, responses);
+        Double[] finalProb = bnb.predictClass(keyChain, responses);
+        // get results
+        Pair<String, Double> result;
+        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
+        return result;
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
@@ -276,26 +286,27 @@ public class BasicNaiveBayes {
         Pair<String, Double> result;
         try {
             result = predictClassFile(bnb, new File(args[1]));
-//        Pair<String, Double> result = predictClassUi(bnb, ui);
+//            result = predictClassUi(bnb, ui);
             System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
                     + "% sure you identify as a " + result.val1);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         boolean flag = false;
         while (!flag) {
             System.out.print("Was this output correct? ");
-            if (ui.next().equals("y")) {
+            String next = ui.next();
+            if (next.equals("y")) {
                 bnb.reweight(true);
                 flag = true;
-            } else if (ui.next().equals("n")) {
+            } else if (next.equals("n")) {
                 bnb.reweight(false);
                 flag = true;
             } else {
                 System.out.println("Please enter a valid response <y> or <n>.");
             }
         }
+        System.out.println("Thank you for your feedback. Good luck in the polls!");
 
         ui.close();
 
