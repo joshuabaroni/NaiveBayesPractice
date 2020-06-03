@@ -28,7 +28,7 @@ public class BasicNaiveBayes {
 //    private String[] classes = {republican, democrat}; // TODO
     private String[] inputKeys; // keys correspond to attribute
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
-
+    public int n;
     public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
 
 //--------------------------------Constructors--------------------------------    
@@ -48,8 +48,21 @@ public class BasicNaiveBayes {
 
     // --------------------private---------------------
 
-    private void reweight() { // reweights this set after every layer
-        // TODO reweight after layer of size "NUM_DATA_INST_PER_LAYER"
+    private void reweight(boolean isCorrect) throws UntrainedModelException { // reweights this set after every layer
+        if (model == null) {
+            throw new UntrainedModelException();
+        }
+        for (String i : inputKeys) {
+            Double[] temp = model.get(i);
+            if ((temp[0] > temp[1] && isCorrect) || (temp[0] < temp[1] && !isCorrect)) {
+                temp[0] *= 1 + (1 / model.size());
+                temp[1] /= 1 + (1 / model.size());
+            } else if ((temp[0] < temp[1] && isCorrect) || (temp[0] > temp[1] && !isCorrect)) {
+                temp[1] *= 1 + (1 / model.size());
+                temp[0] /= 1 + (1 / model.size());
+            }
+        }
+        // re-weight after layer of size "NUM_DATA_INST_PER_LAYER"
     }
 
     // --------------------public----------------------
@@ -79,20 +92,19 @@ public class BasicNaiveBayes {
         for (int i = 0; i < responses.length; i++) {
             if (responses[i] == 1.0) { // factor in 'yes' responses
 //                if (this.model.get(keyChain[i])[0] < this.model.get(keyChain[i])[1]) {
-                    double tempDem = this.model.get(keyChain[i])[1];
-                    double tempRep = this.model.get(keyChain[i])[0];
-                    finalProb[1] += tempDem;
-                    finalProb[0] += tempRep;
-                    yes++;
+                double tempDem = this.model.get(keyChain[i])[1];
+                double tempRep = this.model.get(keyChain[i])[0];
+                finalProb[1] += tempDem;
+                finalProb[0] += tempRep;
+                yes++;
             } else if (responses[i] == 0.0) {
 //                } else if (this.model.get(keyChain[i])[0] > this.model.get(keyChain[i])[1]) {
-                    double tempDem = 1.0 - this.model.get(keyChain[i])[1];
-                    double tempRep = 1.0 - this.model.get(keyChain[i])[0];
-                    finalProb[0] += tempDem;
-                    finalProb[1] += tempRep;
-                    no++;
-            }
-            else {
+                double tempDem = 1.0 - this.model.get(keyChain[i])[1];
+                double tempRep = 1.0 - this.model.get(keyChain[i])[0];
+                finalProb[0] += tempDem;
+                finalProb[1] += tempRep;
+                no++;
+            } else {
                 continue;
             }
         }
@@ -100,9 +112,9 @@ public class BasicNaiveBayes {
         finalProb[1] *= (no / (yes + no));
         // get results
         Pair<String, Double> result;
-        // TODO generalize
+        // TODO generalize category_0, category_1
         result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1])); // TODO change hardset to attribute
+                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
         return result;
     }
 
@@ -158,40 +170,6 @@ public class BasicNaiveBayes {
 //-------------------------------Static Methods-------------------------------    
 
     // ----------------private------------------
-
-    /**
-     * Alter this piece according to your data. Unsure how to make this dynamic
-     * 
-     * @param rawFileDataPts
-     * @return
-     * @throws InvalidDataValueException
-     */
-    private static Double[][] translateData(String[][] rawFileDataPts) throws InvalidDataValueException { // called by
-                                                                                                          // translateData
-        // pXY[currentTrainInstance][Value]
-        String[] finalClasses = { "republican", "democrat" }; // 0.0 = republican, 1.0 = democrat
-        Double[][] pXY = new Double[rawFileDataPts.length][rawFileDataPts[0].length];
-        for (int i = 0; i < rawFileDataPts.length; i++) {
-            for (int j = 0; j < rawFileDataPts[i].length - 1; i++) {
-                String cur = rawFileDataPts[i][j];
-                if (cur == "y") {
-                    pXY[i][j] = 1.0;
-                } else if (cur == "n") {
-                    pXY[i][j] = 0.0;
-                } else {
-                    pXY[i][j] = 0.5;
-                }
-            }
-            if (rawFileDataPts[i][rawFileDataPts[i].length - 1] == finalClasses[0]) {
-                pXY[i][pXY.length - 1] = 1.0;
-            } else if (rawFileDataPts[i][rawFileDataPts[i].length - 1] == finalClasses[1]) {
-                pXY[i][pXY.length - 1] = 0.0;
-            } else {
-                throw new InvalidDataValueException();
-            }
-        }
-        return pXY;
-    }
 
     private static Instances loadArff(File file) throws FileNotFoundException, IOException {
         ArffLoader.ArffReader reader = new ArffLoader.ArffReader(new BufferedReader(new FileReader(file)));
@@ -292,7 +270,7 @@ public class BasicNaiveBayes {
             e.printStackTrace();
         }
         System.out.println("Done training model: " + bnb.toString());
-//        Scanner ui = new Scanner(System.in);
+        Scanner ui = new Scanner(System.in);
         // TODO load from arff
 
         Pair<String, Double> result;
@@ -305,7 +283,21 @@ public class BasicNaiveBayes {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-//      ui.close();
+        boolean flag = false;
+        while (!flag) {
+            System.out.print("Was this output correct? ");
+            if (ui.next().equals("y")) {
+                bnb.reweight(true);
+                flag = true;
+            } else if (ui.next().equals("n")) {
+                bnb.reweight(false);
+                flag = true;
+            } else {
+                System.out.println("Please enter a valid response <y> or <n>.");
+            }
+        }
+
+        ui.close();
 
     }
 }
