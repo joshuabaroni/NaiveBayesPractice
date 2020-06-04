@@ -180,7 +180,7 @@ public class BasicNaiveBayes {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static Pair<String, Double> predictClassFile(BasicNaiveBayes bnb, File file)
+    public static /*Pair<String, Double>*/ void predictClassFile(BasicNaiveBayes bnb, File file)
             throws FileNotFoundException, IOException {
         Instances data = loadArff(file);
         List<Attribute> attr = Collections.list(data.enumerateAttributes());
@@ -188,22 +188,33 @@ public class BasicNaiveBayes {
         String[] attrArray = new String[attr.size() + 1]; // last is for class
         Double[] testDataPtsArray = new Double[attr.size()];
 
-        double[] temp = data.get(0).toDoubleArray();
+        double countCorrect = 0.0, countIncorrect = 0.0;
+        for (int outer = 0; outer < data.size(); outer++) {
+            double[] temp = data.get(outer).toDoubleArray();
 
-        for (int i = 0; i < temp.length - 1; i++) // deep copy double[] to Double[]
-            testDataPtsArray[i] = temp[i];
+            for (int i = 0; i < temp.length - 1; i++) // deep copy double[] to Double[]
+                testDataPtsArray[i] = temp[i];
 
-        for (int i = 0; i < attr.size(); i++) {
-            attrArray[i] = attr.get(i).name();
+            for (int i = 0; i < attr.size(); i++) {
+                attrArray[i] = attr.get(i).name();
+            }
+
+            attrArray[attrArray.length - 1] = "Class";
+            Double[] finalProb = bnb.predictClass(attrArray, testDataPtsArray);
+            if (finalProb[0] > finalProb[1] && data.get(outer).classValue() == 1.0
+                    || finalProb[0] < finalProb[1] && data.get(outer).classValue() == 0.0) {
+                countCorrect++;
+            } else {
+                countIncorrect++;
+            }
         }
-
-        attrArray[attrArray.length - 1] = "Class";
-        Double[] finalProb = bnb.predictClass(attrArray, testDataPtsArray);
+        System.out.println("Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
+        + "\nPercent Accuracy for model: " + (countCorrect / countCorrect + countIncorrect) + "%");
         // get results
-        Pair<String, Double> result;
-        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
-        return result;
+//        Pair<String, Double> result;
+//        result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+//                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
+//        return result;
     }
 
     public static Pair<String, Double> predictClassUi(BasicNaiveBayes bnb, Scanner ui) {
@@ -276,10 +287,10 @@ public class BasicNaiveBayes {
 
         Pair<String, Double> result;
         try {
-            result = predictClassFile(bnb, new File(args[1]));
+            /*result = */predictClassFile(bnb, new File(args[1]));
 //            result = predictClassUi(bnb, ui);
-            System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
-                    + "% sure you identify as a " + result.val1);
+//            System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
+//                    + "% sure you identify as a " + result.val1);
         } catch (IOException e) {
             e.printStackTrace();
         }
