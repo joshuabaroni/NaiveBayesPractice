@@ -198,7 +198,7 @@ public class BasicNaiveBayes {
                 }
             }
             System.out.println("Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
-            + "\nPercent Accuracy for model: " + (countCorrect / countCorrect + countIncorrect) + "%");
+            + "\nPercent Accuracy for model: " + (countCorrect / (countCorrect + countIncorrect)) + "%");
         } catch (IOException e) {
             e.printStackTrace();
         }
