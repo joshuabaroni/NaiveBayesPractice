@@ -1,4 +1,4 @@
-package models;
+package Exceptions;
 
 public class UntrainedModelException extends NullPointerException {
     @Override

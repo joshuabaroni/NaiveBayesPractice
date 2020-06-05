@@ -1,9 +1,9 @@
-package models;
+package testing;
 
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
 
-import constants.Utils;
+import utilities.Utils;
 
 /*
  *    This program is free software; you can redistribute it and/or modify

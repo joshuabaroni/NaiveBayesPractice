@@ -3,16 +3,14 @@ package models;
 import java.io.File;
 import java.io.FileInputStream;
 
-import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.StringToWordVector;
+
 import java.io.IOException;
 import weka.classifiers.trees.RandomForest;
 
-import constants.Utils;
+import utilities.Utils;
 
 /**
  * @author Gowtham Girithar Srirangasamy
@@ -37,7 +35,7 @@ public class RandomForestDemo {
      */
     public static Instances getDataSet(String fileName) throws IOException {
         /**
-         * we can set the file i.e., loader.setFile("finename") to load the data
+         * we can set the file i.e., loader.setFile("filename") to load the data
          */
         int classIdx = 1;
         /** the arffloader to load the arff file */

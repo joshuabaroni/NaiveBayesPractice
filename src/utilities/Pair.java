@@ -1,4 +1,4 @@
-package models;
+package utilities;
 
 public class Pair<T1, T2> {
     

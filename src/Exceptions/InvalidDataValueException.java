@@ -1,4 +1,4 @@
-package models;
+package Exceptions;
 
 /**
  * Thrown when model contains an invalid value

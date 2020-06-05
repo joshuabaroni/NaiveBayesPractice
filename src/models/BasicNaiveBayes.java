@@ -10,8 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 
+import Exceptions.UntrainedModelException;
+import utilities.Pair;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
@@ -95,6 +96,10 @@ public class BasicNaiveBayes {
         return finalProb;
     }
 
+    /**
+     * Basic Naive Bayes approach works on true/false datasets
+     * @return
+     */
     public BasicNaiveBayes train() {
         // width first (instance iterator; covers all keywords in a model instance)
         for (int i = 0; i < values.get("Class").length; i++) {
@@ -109,6 +114,7 @@ public class BasicNaiveBayes {
                 }
             }
             Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
+            // TODO translate quantitative data into qualitative data
             if (i == 0) { // cannot reweight effectively till numInstances > 2
                 for (String j0 : inputKeys) {
                     double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
@@ -240,8 +246,8 @@ public class BasicNaiveBayes {
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = "src/testdata/voting_train.arff";
-        args[1] = "src/testdata/voting_test.arff";
+        args[0] = utilities.Utils.FILESPACE + "voting_train.arff";
+        args[1] = utilities.Utils.FILESPACE + "voting_test.arff";
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
