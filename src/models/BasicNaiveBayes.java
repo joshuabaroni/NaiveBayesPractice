@@ -46,8 +46,26 @@ public class BasicNaiveBayes {
 
     private void reweight(double classification, int i) throws UntrainedModelException { // TODO reweights model after every layer
         for (String key : inputKeys) {
+            Double[] rangeCategories;
             Double[] temp = model.get(key);
             double see_value = values.get(key)[i];
+
+            // check for quantitative data
+            if (values.get(key)[i] > 1.0) {
+                rangeCategories = quanToQual(key);
+
+                for (int j = 1; j < rangeCategories.length; j++) {
+                    if (see_value > rangeCategories[j - 1] && see_value < rangeCategories[j]) {
+                        if (j < rangeCategories.length / 2)
+                            // find the halfway mark. median = 1.0, extremes = 0.0
+                            see_value = 1.0 - (j / (rangeCategories.length / 2.0)); // ex: 3rd cat with size n=8: 1 - (1 - 3/4) = 3/4
+                            // TODO account for mean
+                        else
+                            see_value = 1.0 - (Math.abs(1.0 - (j / (rangeCategories.length / 2.0)))); // ex: 5th cat with size n=8: 1 - (1 - 5/4) = 3/4
+                    }
+                }
+            }
+
             if (!Double.isNaN(see_value)) {
                 if (classification == 1.0) {
                     temp[0] = (see_value + temp[0] * (numInstances - 1)) / numInstances;
@@ -61,8 +79,8 @@ public class BasicNaiveBayes {
         }
     }
 
-    private Pair<Double, Double> findRangeAndNumClasses(String key) {
-        Pair<Double, Double> out;
+    private Double[] quanToQual(String key) {
+        Pair<Double, Double> dimensions;
         Double min = Double.MAX_VALUE;
         Double max = Double.MIN_VALUE;
         Double[] vals = values.get(key);
@@ -72,8 +90,15 @@ public class BasicNaiveBayes {
             if (max < i)
                 max = i;
         }
-        out = new Pair(max - min, 1 + (Math.log(vals.length) / Math.log(2)));
-        return out;
+        dimensions = new Pair(max - min, 1 + (Math.log(vals.length) / Math.log(2)));
+        double classWidth = dimensions.val1 / dimensions.val2;
+        Double[] rangeCategories = new Double[dimensions.val2.intValue()];
+        for (int k = 0; k < rangeCategories.length; k++) {
+            // 1st cat to nth cat
+            // if (within this rangeClass) then range value = (1/dimensions.val2) * which class
+            rangeCategories[k] = (1.0 + k) / dimensions.val2; // lower bound == rangeCats[n-1]; upper bound == rangeCats[n]
+        }
+        return rangeCategories;
     }
 
     // --------------------public----------------------
@@ -133,6 +158,7 @@ public class BasicNaiveBayes {
             }
             Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
             // TODO translate quantitative data into qualitative data
+            Double[] rangeCategories;
             if (i == 0) { // cannot reweight effectively till numInstances > 2
                 for (String j0 : inputKeys) {
                     double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
@@ -140,15 +166,7 @@ public class BasicNaiveBayes {
                     if (Double.isNaN(firstValue))
                         firstValue = 0.5;
                     else if (firstValue > 1.0) {
-                        Pair<Double, Double> dimensions = findRangeAndNumClasses(j0); // returns range = max - min of values in this attr
-                        double classWidth = dimensions.val1 / dimensions.val2;
-//                        double rangeClasses = TODO
-                        for (int k = 0; k < classWidth; k++) {
-                            // 1st cat to nth cat
-                            // TODO what to do here?
-                        }
-                        // TODO convert rangeClasses to range values (1/dimensions.val2)
-                        // if (within this rangeClass) then range value = (1/dimensions.val2) * which class
+                        rangeCategories = quanToQual(j0);
                     }
                     if (classification == 1.0) // isFirstClass
                         model.put(j0, new Double[] { firstValue, Math.abs(1 - firstValue) });
@@ -224,7 +242,7 @@ public class BasicNaiveBayes {
                 }
             }
             System.out.println("Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
-            + "\nPercent Accuracy for model: " + (countCorrect / (countCorrect + countIncorrect)) + "%");
+            + "\nPercent Accuracy for model: " + String.format("%.1f", (countCorrect / (countCorrect + countIncorrect)) * 100.0) + "%");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -294,8 +312,8 @@ public class BasicNaiveBayes {
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "voting_train.arff";
-        args[1] = utilities.Utils.FILESPACE + "voting_test.arff";
+        args[0] = utilities.Utils.FILESPACE + "weather_train.arff";
+        args[1] = utilities.Utils.FILESPACE + "weather_test.arff";
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
