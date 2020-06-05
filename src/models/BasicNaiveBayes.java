@@ -11,11 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import Exceptions.UnsupportedFiletypeException;
 import Exceptions.UntrainedModelException;
+import org.apache.commons.io.FilenameUtils;
 import utilities.Pair;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
+import weka.core.converters.CSVLoader;
 
 /**
  * Handles basic yes/no inputs
@@ -136,15 +139,21 @@ public class BasicNaiveBayes {
         return this;
     }
 
-//-------------------------------Static Methods-------------------------------    
+//-------------------------------Static Methods-------------------------------
 
     // ----------------private------------------
 
-    private static Instances loadArff(File file) throws FileNotFoundException, IOException {
+    private static Instances loadArff(File file) throws IOException {
         ArffLoader.ArffReader reader = new ArffLoader.ArffReader(new BufferedReader(new FileReader(file)));
         Instances data = reader.getData();
         data.setClassIndex(data.numAttributes() - 1);
         return data;
+    }
+
+    private static Instances loadCSV(File file) throws IOException {
+        CSVLoader loader = new CSVLoader();
+        loader.setSource(file);
+        return loader.getDataSet();
     }
 
     // ----------------public-------------------
@@ -195,6 +204,12 @@ public class BasicNaiveBayes {
         }
     }
 
+    /**
+     * Alter UI as needed per dataset
+     * @param bnb
+     * @param ui
+     * @return
+     */
     public static Double[] predictClassUi(BasicNaiveBayes bnb, Scanner ui) {
         System.out.println("Respond to the following prompts by typing 'y' or 'n' and hitting the <ENTER> key.");
         String[] keyChain = bnb.model.keySet().toArray(new String[bnb.model.keySet().size()]);
@@ -218,7 +233,14 @@ public class BasicNaiveBayes {
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
-        Instances data = loadArff(file);
+        Instances data;
+        if (FilenameUtils.getExtension(file.getName()).equals("arff")) {
+            data = loadArff(file);
+        } else if (FilenameUtils.getExtension(file.getName()).equals("csv")) {
+            data = loadCSV(file);
+        } else {
+            throw new UnsupportedFiletypeException();
+        }
 
         BasicNaiveBayes bnb = new BasicNaiveBayes();
         List<Attribute> attr = Collections.list(data.enumerateAttributes());
