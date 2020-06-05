@@ -61,6 +61,21 @@ public class BasicNaiveBayes {
         }
     }
 
+    private Pair<Double, Double> findRangeAndNumClasses(String key) {
+        Pair<Double, Double> out;
+        Double min = Double.MAX_VALUE;
+        Double max = Double.MIN_VALUE;
+        Double[] vals = values.get(key);
+        for (Double i : vals) {
+            if (min > i)
+                min = i;
+            if (max < i)
+                max = i;
+        }
+        out = new Pair(max - min, 1 + (Math.log(vals.length) / Math.log(2)));
+        return out;
+    }
+
     // --------------------public----------------------
 
     public Map<String, Double[]> getModel() {
@@ -121,8 +136,19 @@ public class BasicNaiveBayes {
             if (i == 0) { // cannot reweight effectively till numInstances > 2
                 for (String j0 : inputKeys) {
                     double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
-                    if (Double.isNaN(firstValue)) {
+                    // check if value is qualitative. if quantitative, translate to qualitative (range-based classification)
+                    if (Double.isNaN(firstValue))
                         firstValue = 0.5;
+                    else if (firstValue > 1.0) {
+                        Pair<Double, Double> dimensions = findRangeAndNumClasses(j0); // returns range = max - min of values in this attr
+                        double classWidth = dimensions.val1 / dimensions.val2;
+//                        double rangeClasses = TODO
+                        for (int k = 0; k < classWidth; k++) {
+                            // 1st cat to nth cat
+                            // TODO what to do here?
+                        }
+                        // TODO convert rangeClasses to range values (1/dimensions.val2)
+                        // if (within this rangeClass) then range value = (1/dimensions.val2) * which class
                     }
                     if (classification == 1.0) // isFirstClass
                         model.put(j0, new Double[] { firstValue, Math.abs(1 - firstValue) });
