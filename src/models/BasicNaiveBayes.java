@@ -17,8 +17,7 @@ import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
 
 /**
- * NB Model to help me understand better how the algorithm works.
- * Currently handles bool classifications
+ * NB Model I wrote to help me understand better how the NB algorithm works.
  * 
  * @author Josh Baroni
  *
@@ -57,7 +56,7 @@ public class BasicNaiveBayes {
                         if (j < rangeCategories.length / 2)
                             // find the halfway mark. median = 1.0, extremes = 0.0
                             see_value = 1.0 - (j / (rangeCategories.length / 2.0)); // ex: 3rd cat with size n=8: 1 - (1 - 3/4) = 3/4
-                            // TODO account for mean
+                            // TODO find the frequencies of each category and weight membership in each category accordingly to account for mean
                         else
                             see_value = 1.0 - (Math.abs(1.0 - (j / (rangeCategories.length / 2.0)))); // ex: 5th cat with size n=8: 1 - (1 - 5/4) = 3/4
                     }
