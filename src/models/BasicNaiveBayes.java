@@ -5,11 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 import Exceptions.UnsupportedFiletypeException;
 import Exceptions.UntrainedModelException;
@@ -31,6 +27,7 @@ public class BasicNaiveBayes {
 
 //    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
     private String[] inputKeys; // keys correspond to attribute
+    private Double[] possibleClasses;
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
     public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
     public int numInstances = 0;
@@ -68,13 +65,11 @@ public class BasicNaiveBayes {
             }
 
             if (!Double.isNaN(see_value)) {
-                // TODO account for more than 1 values
-                if (classification == 1.0) { // check classification == i for all String i : class
-                    temp[0] = (see_value + temp[0] * (numInstances - 1)) / numInstances;
-                    temp[1] = (Math.abs(1 - see_value) + temp[1] * (numInstances - 1)) / numInstances;
-                } else if (classification == 0.0) {
-                    temp[1] = (see_value + temp[1] * (numInstances - 1)) / numInstances;
-                    temp[0] = (Math.abs(1 - see_value) + temp[0] * (numInstances - 1)) / numInstances;
+                // TODO account for more than 2 values
+                for (int j = 0; j < possibleClasses.length; j++) {
+                    if (classification == possibleClasses[j]) { // check classification == i for all String i : class
+                        temp[j] = (see_value + temp[j] * (numInstances - 1)) / numInstances;
+                    }
                 }
             }
             model.put(key, temp);
@@ -122,23 +117,37 @@ public class BasicNaiveBayes {
         return this;
     }
 
-    public Double[] predictClass(String[] keyChain, Double[] responses) {
+    /**
+     * Returns double value of highest likelihood class
+     * @param keyChain
+     * @param responses
+     * @return
+     */
+    public Double predictClass(String[] keyChain, Double[] responses) {
         // need keyChain because keys will not be in the same order as this.inputKeys
-        Double[] finalProb = {0.5, 0.5};
+        int numClasses = possibleClasses.length;
+        Double[] classProbs = new Double[numClasses];
+        Arrays.fill(classProbs, 1.0 / numClasses); // fill all indices with equal probability
         for (int i = 0; i < responses.length; i++) { // TODO mod this to handle more than two inputs
-            double model_0 = model.get(keyChain[i])[0];
-            double model_1 = model.get(keyChain[i])[1];
-            if (responses[i] == 1.0) {
-                finalProb[0] = (finalProb[0] + model_0) / 2;
-                finalProb[1] = (finalProb[1] + model_1) / 2;
-            } else if (responses[i] == 0.0) {
-                finalProb[0] = (finalProb[0] + (1 - model_0)) / 2;
-                finalProb[1] = (finalProb[1] + (1 - model_1)) / 2;
-            } else {
-                continue;
+            for (int j = 0; j < classProbs.length; j++) {// numClasses possible
+                double model_j = model.get(keyChain[i])[j];
+                if (responses[i] == 1.0) { // TODO if class i double val then finalProb[i] = (finalProb[i] + model_i) / 2
+                    classProbs[j] = (classProbs[j] + model_j) / 2;
+                } else if (responses[i] == 0.0) {
+                    classProbs[j] = (classProbs[j] + (1 - model_j)) / 2;
+                } else {
+                    continue;
+                }
             }
         }
-        return finalProb;
+        Double max = Double.MIN_VALUE;
+        int maxIndex = 0;
+        for (int i = 0; i < classProbs.length; i++)
+            if (classProbs[i] > max) {
+                maxIndex = i;
+                max = classProbs[i];
+            }
+        return possibleClasses[maxIndex];
     }
 
     /**
@@ -152,34 +161,35 @@ public class BasicNaiveBayes {
             // depth second (keyword iterator; steps through each keyword in an instance
             Double[] thisInstance = new Double[inputKeys.length - 1];
             for (int j0 = 0; j0 < inputKeys.length; j0++) {
-                if (inputKeys[j0].equalsIgnoreCase("class")) {
+                if (inputKeys[j0].equalsIgnoreCase("class")) { // skip class attr
                     continue;
                 } else {
                     thisInstance[j0] = values.get(inputKeys[j0])[i];
                 }
             }
             Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
-            // TODO translate quantitative data into qualitative data
+            // translate quantitative data into qualitative data
             Double[] rangeCategories;
-            if (i == 0) { // cannot reweight effectively till numInstances > 2
+            if (model.size() == 0) { // cannot reweight effectively till numInstances > 2
                 for (String j0 : inputKeys) {
                     double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
                     // check if value is qualitative. if quantitative, translate to qualitative (range-based classification)
                     if (Double.isNaN(firstValue))
-                        firstValue = 0.5;
+                        firstValue = 1.0/possibleClasses.length;
                     else if (firstValue > 1.0) {
                         rangeCategories = quanToQual(j0);
                     }
-                    if (classification == 1.0) // isFirstClass
-                        model.put(j0, new Double[] { firstValue, Math.abs(1 - firstValue) });
-                    else if (classification == 0.0) // !isFirstClass
-                        model.put(j0, new Double[] { Math.abs(1 - firstValue), firstValue });
+                    for (Double k : possibleClasses) {
+                        if (classification == k) {// isFirstClass
+                            Double[] temp = new Double[possibleClasses.length];
+                            Arrays.fill(temp, 1.0 / possibleClasses.length);
+                            temp[0] = k; // TODO hardcoded 0 vs i? // first value is the first possible class
+                            model.put(j0, temp);
+                        }
+                    }
                 }
             } else { // reweight after every instance
                 reweight(classification, i);
-            }
-            if (/*i == 2 || i == 28 || i == 256 ||*/ i == 434) { // to check at random intervals that the model algo is correct
-                System.out.println("instanceCheckpoint");
             }
         }
         return this;
@@ -241,10 +251,9 @@ public class BasicNaiveBayes {
                 }
 
                 attrArray[attrArray.length - 1] = "Class";
-                Double[] finalProb = bnb.predictClass(attrArray, testDataPtsArray);
-                // TODO find max probability and return that class
-                if (finalProb[0] > finalProb[1] && data.get(outer).classValue() == 1.0
-                        || finalProb[0] < finalProb[1] && data.get(outer).classValue() == 0.0) {
+                Double finalProb = bnb.predictClass(attrArray, testDataPtsArray);
+                // TODO alter to accomodate >2 categories
+                if (data.get(outer).classValue() == finalProb) {
                     countCorrect++;
                 } else {
                     countIncorrect++;
@@ -282,11 +291,11 @@ public class BasicNaiveBayes {
                 }
             }
         }
-        Double[] finalProb = bnb.predictClass(keyChain, responses);
-        Pair<String, Double> result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
-        System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
-                + "% sure you identify as a " + result.val1);
+        Double finalProb = bnb.predictClass(keyChain, responses);
+//        Pair<String, Double> result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+//                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
+//        System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
+//                + "% sure you identify as a " + result.val1);
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
@@ -319,14 +328,30 @@ public class BasicNaiveBayes {
 
         attrArray[attrArray.length - 1] = "Class";
         bnb.buildMap(attrArray, dataPtsArray);
+
+        Double[] temp = bnb.values.get("Class");
+        ArrayList<Double> classes = new ArrayList<>();
+        for (int i = 0; i < temp.length; i++) { // gets 1 of each variety of classes so we know what classes are possible
+            boolean flag = false;
+            for (int j = 0; j < i; j++) {
+                if (temp[j].doubleValue() == temp[i].doubleValue()) {
+                    flag = true;
+                }
+            }
+            if (!flag) {
+                classes.add(temp[i]);
+            }
+        }
+        bnb.possibleClasses = new Double[classes.size()];
+        classes.toArray(bnb.possibleClasses);
         return bnb;
     }
 
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "labor_negotiations.arff";
-        args[1] = utilities.Utils.FILESPACE + "labor_negotiations.arff";
+        args[0] = utilities.Utils.FILESPACE + "labor_negotiations.arff"; // train
+        args[1] = utilities.Utils.FILESPACE + "labor_negotiations.arff"; // test
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
