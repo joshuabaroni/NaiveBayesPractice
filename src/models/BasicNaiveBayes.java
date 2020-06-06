@@ -21,7 +21,8 @@ import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
 
 /**
- * Handles basic yes/no inputs
+ * NB Model to help me understand better how the algorithm works.
+ * Currently handles bool classifications
  * 
  * @author Josh Baroni
  *
@@ -67,7 +68,8 @@ public class BasicNaiveBayes {
             }
 
             if (!Double.isNaN(see_value)) {
-                if (classification == 1.0) {
+                // TODO account for more than 1 values
+                if (classification == 1.0) { // check classification == i for all String i : class
                     temp[0] = (see_value + temp[0] * (numInstances - 1)) / numInstances;
                     temp[1] = (Math.abs(1 - see_value) + temp[1] * (numInstances - 1)) / numInstances;
                 } else if (classification == 0.0) {
@@ -123,7 +125,7 @@ public class BasicNaiveBayes {
     public Double[] predictClass(String[] keyChain, Double[] responses) {
         // need keyChain because keys will not be in the same order as this.inputKeys
         Double[] finalProb = {0.5, 0.5};
-        for (int i = 0; i < responses.length; i++) {
+        for (int i = 0; i < responses.length; i++) { // TODO mod this to handle more than two inputs
             double model_0 = model.get(keyChain[i])[0];
             double model_1 = model.get(keyChain[i])[1];
             if (responses[i] == 1.0) {
@@ -234,6 +236,7 @@ public class BasicNaiveBayes {
 
                 attrArray[attrArray.length - 1] = "Class";
                 Double[] finalProb = bnb.predictClass(attrArray, testDataPtsArray);
+                // TODO find max probability and return that class
                 if (finalProb[0] > finalProb[1] && data.get(outer).classValue() == 1.0
                         || finalProb[0] < finalProb[1] && data.get(outer).classValue() == 0.0) {
                     countCorrect++;
@@ -312,8 +315,8 @@ public class BasicNaiveBayes {
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "weather_train.arff";
-        args[1] = utilities.Utils.FILESPACE + "weather_test.arff";
+        args[0] = utilities.Utils.FILESPACE + "soybeans.arff";
+        args[1] = utilities.Utils.FILESPACE + "soybeans.arff";
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
