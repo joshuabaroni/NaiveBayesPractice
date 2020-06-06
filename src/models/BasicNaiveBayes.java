@@ -216,7 +216,13 @@ public class BasicNaiveBayes {
     public static void predictClassFile(BasicNaiveBayes bnb, File file) {
         Instances data;
         try {
-            data = loadArff(file);
+            if (FilenameUtils.getExtension(file.getName()).equals("arff")) {
+                data = loadArff(file);
+            } else if (FilenameUtils.getExtension(file.getName()).equals("csv")) {
+                data = loadCSV(file);
+            } else {
+                throw new UnsupportedFiletypeException();
+            }
 
             List<Attribute> attr = Collections.list(data.enumerateAttributes());
 
@@ -257,7 +263,7 @@ public class BasicNaiveBayes {
      * @param ui
      * @return
      */
-    public static Double[] predictClassUi(BasicNaiveBayes bnb, Scanner ui) {
+    public static void voterPollUi(BasicNaiveBayes bnb, Scanner ui) {
         System.out.println("Respond to the following prompts by typing 'y' or 'n' and hitting the <ENTER> key.");
         String[] keyChain = bnb.model.keySet().toArray(new String[bnb.model.keySet().size()]);
         Double[] responses = new Double[keyChain.length - 1];
@@ -276,7 +282,11 @@ public class BasicNaiveBayes {
                 }
             }
         }
-        return bnb.predictClass(keyChain, responses);
+        Double[] finalProb = bnb.predictClass(keyChain, responses);
+        Pair<String, Double> result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
+                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
+        System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
+                + "% sure you identify as a " + result.val1);
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
@@ -315,8 +325,8 @@ public class BasicNaiveBayes {
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "soybeans.arff";
-        args[1] = utilities.Utils.FILESPACE + "soybeans.arff";
+        args[0] = utilities.Utils.FILESPACE + "labor_negotiations.arff";
+        args[1] = utilities.Utils.FILESPACE + "labor_negotiations.arff";
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
@@ -327,13 +337,7 @@ public class BasicNaiveBayes {
         System.out.println("Done training model: " + bnb.toString());
         Scanner ui = new Scanner(System.in);
 
-        Pair<String, Double> result;
         predictClassFile(bnb, new File(args[1]));
-//            Double[] finalProb = predictClassUi(bnb, ui);
-//            result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-//                    : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
-//            System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
-//                    + "% sure you identify as a " + result.val1);
 
         ui.close();
 
