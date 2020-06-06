@@ -19,12 +19,22 @@ Basic Naive Bayes ML model written in Java
 ### Overview
 - Using probability as its primary tool, Naive Bayes compares previous responses and their correlation to a class output to predict what the final response of a new class will be.
 - Any new output successfully predicted will serve as reinforcement learning to improve the accuracy of the algorithm's future predictions.
-
-### Voting Model
-- The current model build is trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
-- Training data used is from the [1984 voter census](https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
-- This build features a user console interface that not only presents its prediction based on the questionnaire but also asks the user to verify the accuracy of its outcome. The algorithm will then reweight the model according to the user's feedback.
 - As the model's base algorithm is improved, it should more widely accept data from any context formatted into .arff files.
+
+### Labor Negotiation Poll
+- This dataset trains the model to recognize acceptable compensations for labor.
+- Accuracy with this dataset: ~72% correct
+
+### Weather Prediction
+- This dataset trains the model to make a decision on whether the weather ;) is good enough to go outside in.
+- Accuracy with this dataset: ~64% correct
+
+### Voting Data
+- The current model can be trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
+- This build features a user console interface that not only presents its prediction based on the questionnaire but also asks the user to verify the accuracy of its outcome. The algorithm will then reweight the model according to the user's feedback.
+  - The voterPollUi() method is a public static class callable within the BasicNaiveBayes class
+- Training data used is from the [1984 voter census](https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
+- Accuracy with this dataset: ~85% correct
 
 ## Technologies
 - Based off of analysis of the [Weka Naive Bayes model](https://weka.sourceforge.io/doc.dev/weka/classifiers/bayes/NaiveBayes.html)
