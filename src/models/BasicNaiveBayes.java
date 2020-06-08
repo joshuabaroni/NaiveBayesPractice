@@ -18,15 +18,15 @@ import weka.core.converters.CSVLoader;
 
 /**
  * NB Model I wrote to help me understand better how the NB algorithm works.
- * 
- * @author Josh Baroni
  *
+ * @author Josh Baroni
  */
 public class BasicNaiveBayes {
 
-//    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
+    //    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
     private String[] inputKeys; // keys correspond to attribute
     private Double[] possibleClasses;
+    private Map<String, Double[][]> rangeFrequencies; // [key/Attr][class][frequencyOfEachRange]
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
     public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
     public int numInstances = 0;
@@ -43,39 +43,51 @@ public class BasicNaiveBayes {
 
     private void reweight(double classification, int i) throws UntrainedModelException { // TODO reweights model after every layer
         for (String key : inputKeys) {
-            Double[] rangeCategories;
-            Double[] temp = model.get(key);
-            double see_value = values.get(key)[i];
+            if (!key.equalsIgnoreCase("class")) {
+                Double[] rangeCategories = null;
+                int indexOfClass = 0;
+                while (classification != possibleClasses[indexOfClass]) {
+                    // check classification == i for all String i : class
+                    indexOfClass++;
+                }
+                Double[] thisFrequency = null;
+                Double[] temp = model.get(key); // TODO what is temp?
+                double see_value = values.get(key)[i];
 
-            // check for quantitative data
-            if (values.get(key)[i] > 1.0) {
-                rangeCategories = quanToQual(key);
+//            if (rangeFrequencies.get(key) == null) {
+//                rangeFrequencies.put(key, new Double[inputKeys.length][]); // TODO [classes][allDifferentQuantitative<Qual?>Attributes][RangesWithinEachCategory]
+//            }
+
+                if (values.get(key)[i] > 1.0) { // TODO this block
+                    rangeCategories = quanToQual(key);
+                } else {
+                    rangeCategories = new Double[]{0.5, 1.0}; // qualitative cats: 0-0.5, 0.5-1
+                }
+
+                if (rangeFrequencies.get(key)[indexOfClass] == null) {
+                    thisFrequency = new Double[rangeCategories.length]; // thisFrequency
+                    Arrays.fill(thisFrequency, 0.0);
+                } else {
+                    rangeCategories = rangeFrequencies.get(key)[indexOfClass];
+                }
 
                 for (int j = 1; j < rangeCategories.length; j++) {
                     if (see_value > rangeCategories[j - 1] && see_value < rangeCategories[j]) {
-                        if (j < rangeCategories.length / 2)
-                            // find the halfway mark. median = 1.0, extremes = 0.0
-                            see_value = 1.0 - (j / (rangeCategories.length / 2.0)); // ex: 3rd cat with size n=8: 1 - (1 - 3/4) = 3/4
-                            // TODO find the frequencies of each category and weight membership in each category accordingly to account for mean
-                        else
-                            see_value = 1.0 - (Math.abs(1.0 - (j / (rangeCategories.length / 2.0)))); // ex: 5th cat with size n=8: 1 - (1 - 5/4) = 3/4
+                        thisFrequency[j] = (see_value + thisFrequency[j] * numInstances - 1) / numInstances;
                     }
                 }
-            }
-
-            if (!Double.isNaN(see_value)) {
-                // TODO account for more than 2 values
-                for (int j = 0; j < possibleClasses.length; j++) {
-                    if (classification == possibleClasses[j]) { // check classification == i for all String i : class
-                        temp[j] = (see_value + temp[j] * (numInstances - 1)) / numInstances;
-                    }
+                if (!Double.isNaN(see_value)) {
+                    temp[indexOfClass] = (see_value + temp[indexOfClass] * (numInstances - 1)) / numInstances;
                 }
+                Double[][] rangeFreqAdjuster = rangeFrequencies.get(key);
+                rangeFreqAdjuster[indexOfClass] = thisFrequency;
+                rangeFrequencies.put(key, rangeFreqAdjuster);
+                model.put(key, temp);
             }
-            model.put(key, temp);
         }
     }
 
-    private Double[] quanToQual(String key) {
+    private Double[] quanToQual(String key) {  // TODO quanToQual is not creating categories correctly
         Pair<Double, Double> dimensions;
         Double min = Double.MAX_VALUE;
         Double max = Double.MIN_VALUE;
@@ -92,7 +104,7 @@ public class BasicNaiveBayes {
         for (int k = 0; k < rangeCategories.length; k++) {
             // 1st cat to nth cat
             // if (within this rangeClass) then range value = (1/dimensions.val2) * which class
-            rangeCategories[k] = (1.0 + k) / dimensions.val2; // lower bound == rangeCats[n-1]; upper bound == rangeCats[n]
+            rangeCategories[k] = ((1.0 + k) / dimensions.val2) + min; // lower bound == rangeCats[n-1]; upper bound == rangeCats[n]
         }
         return rangeCategories;
     }
@@ -118,6 +130,7 @@ public class BasicNaiveBayes {
 
     /**
      * Returns double value of highest likelihood class
+     *
      * @param keyChain
      * @param responses
      * @return
@@ -151,6 +164,7 @@ public class BasicNaiveBayes {
 
     /**
      * Basic Naive Bayes approach works on true/false datasets
+     *
      * @return
      */
     public BasicNaiveBayes train() {
@@ -167,6 +181,8 @@ public class BasicNaiveBayes {
                 }
             }
             Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
+            if (classification != 0.0 && classification != 1.0)
+                System.out.println("checkpoint");
             // translate quantitative data into qualitative data
             Double[] rangeCategories;
             if (model.size() == 0) { // cannot reweight effectively till numInstances > 2
@@ -174,7 +190,7 @@ public class BasicNaiveBayes {
                     double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
                     // check if value is qualitative. if quantitative, translate to qualitative (range-based classification)
                     if (Double.isNaN(firstValue))
-                        firstValue = 1.0/possibleClasses.length;
+                        firstValue = 1.0 / possibleClasses.length;
                     else if (firstValue > 1.0) {
                         rangeCategories = quanToQual(j0);
                     }
@@ -215,7 +231,7 @@ public class BasicNaiveBayes {
 
     /**
      * Runs testfile alongside trained model
-     * 
+     *
      * @param bnb
      * @param file
      * @return
@@ -259,7 +275,7 @@ public class BasicNaiveBayes {
                 }
             }
             System.out.println("Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
-            + "\nPercent Accuracy for model: " + String.format("%.1f", (countCorrect / (countCorrect + countIncorrect)) * 100.0) + "%");
+                    + "\nPercent Accuracy for model: " + String.format("%.1f", (countCorrect / (countCorrect + countIncorrect)) * 100.0) + "%");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -267,6 +283,7 @@ public class BasicNaiveBayes {
 
     /**
      * Alter UI as needed per dataset
+     *
      * @param bnb
      * @param ui
      * @return
@@ -343,14 +360,20 @@ public class BasicNaiveBayes {
         }
         bnb.possibleClasses = new Double[classes.size()];
         classes.toArray(bnb.possibleClasses);
+        bnb.rangeFrequencies = new HashMap<String, Double[][]>();
+        for (String key : bnb.inputKeys) {
+            if (!key.equalsIgnoreCase("class")) {
+                bnb.rangeFrequencies.put(key, new Double[bnb.possibleClasses.length][]); // TODO [quantitative categories][classes][frequency of each category]
+            }
+        }
         return bnb;
     }
 
     public static void main(String[] args) {
         System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "labor_negotiations.arff"; // train
-        args[1] = utilities.Utils.FILESPACE + "labor_negotiations.arff"; // test
+        args[0] = utilities.Utils.FILESPACE + "voting.arff"; // train
+        args[1] = utilities.Utils.FILESPACE + "voting.arff"; // test
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
