@@ -19,11 +19,11 @@ Basic Naive Bayes ML model written in Java
 ### Overview
 - Using probability as its primary tool, Naive Bayes compares previous responses and their correlation to a class output to predict what the final response of a new class will be.
 - Any new output successfully predicted will serve as reinforcement learning to improve the accuracy of the algorithm's future predictions.
-- As the model's base algorithm is improved, it should more widely accept data from any context formatted into .arff files.
+- The current model can be trained with reasonable accuracy (60-80% on qualitative and 80-95% on quantitative data) on any .arff dataset
 
 ### Labor Negotiation Poll
 - This dataset trains the model to recognize acceptable compensations for labor.
-- Accuracy with this dataset: ~72% correct
+- Accuracy with this dataset: ~80% correct
 
 ### Weather Prediction
 - This dataset trains the model to make a decision on whether the weather ;) is good enough to go outside in.
@@ -35,6 +35,8 @@ Basic Naive Bayes ML model written in Java
   - The voterPollUi() method is a public static class callable within the BasicNaiveBayes class
 - Training data used is from the [1984 voter census](https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
 - Accuracy with this dataset: ~85% correct
+
+### TODO: Other datasets included in the file
 
 ## Technologies
 - Based off of analysis of the [Weka Naive Bayes model](https://weka.sourceforge.io/doc.dev/weka/classifiers/bayes/NaiveBayes.html)
