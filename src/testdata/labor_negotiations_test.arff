@@ -1,0 +1,30 @@
+@relation 'labor-neg-data'
+@attribute 'duration' real
+@attribute 'wage-increase-first-year' real
+@attribute 'wage-increase-second-year' real
+@attribute 'wage-increase-third-year' real
+@attribute 'cost-of-living-adjustment' {'none','tcf','tc'}
+@attribute 'working-hours' real
+@attribute 'pension' {'none','ret_allw','empl_contr'}
+@attribute 'standby-pay' real
+@attribute 'shift-differential' real
+@attribute 'education-allowance' {'yes','no'}
+@attribute 'statutory-holidays' real
+@attribute 'vacation' {'below_average','average','generous'}
+@attribute 'longterm-disability-assistance' {'yes','no'}
+@attribute 'contribution-to-dental-plan' {'none','half','full'}
+@attribute 'bereavement-assistance' {'yes','no'}
+@attribute 'contribution-to-health-plan' {'none','half','full'}
+@attribute 'class' {'bad','good'}
+@data
+2,2.5,2.5,?,?,38,'empl_contr',?,?,?,10,'average',?,?,?,?,'bad'
+2,4,5,?,'none',40,'none',?,3,'no',10,'below_average','no','none',?,'none','bad'
+3,2,2.5,2.1,'tc',40,'none',2,1,'no',10,'below_average','no','half','yes','full','bad'
+2,2,2,?,'none',40,'none',?,?,'no',11,'average','yes','none','yes','full','bad'
+1,2,?,?,'tc',40,'ret_allw',4,0,'no',11,'generous','no','none','no','none','bad'
+1,2.8,?,?,'none',38,'empl_contr',2,3,'no',9,'below_average','yes','half',?,'none','bad'
+3,2,2.5,2,?,37,'empl_contr',?,?,?,10,'average',?,?,'yes','none','bad'
+2,4.5,4,?,'none',40,?,?,4,?,12,'average','yes','full','yes','half','good'
+1,4,?,?,'none',?,'none',?,?,'yes',11,'average','no','none','no','none','bad'
+2,2,3,?,'none',38,'empl_contr',?,?,'yes',12,'generous','yes','none','yes','full','bad'
+2,2.5,2.5,?,'tc',39,'empl_contr',?,?,?,12,'average',?,?,'yes',?,'bad'

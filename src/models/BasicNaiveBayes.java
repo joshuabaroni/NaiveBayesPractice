@@ -1,12 +1,5 @@
 package models;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-
 import Exceptions.UnsupportedFiletypeException;
 import Exceptions.UntrainedModelException;
 import org.apache.commons.io.FilenameUtils;
@@ -15,6 +8,9 @@ import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * NB Model I wrote to help me understand better how the NB algorithm works.
@@ -26,71 +22,94 @@ public class BasicNaiveBayes {
     //    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
     private String[] inputKeys; // keys correspond to attribute
     private Double[] possibleClasses;
+    private Map<String, Double[]> rangeCategories; // [key/Attr][range] class not needed
     private Map<String, Double[][]> rangeFrequencies; // [key/Attr][class][frequencyOfEachRange]
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
-    public Map<String, Double[]> model; // value[0] = likelihood of 'y' if class = true, 'n' if class = false
+    private Boolean[] isQuan; // if true, this attribute is quantitative, else this attribute is qualitative
     public int numInstances = 0;
 //--------------------------------Constructors--------------------------------    
 
     public BasicNaiveBayes() {
         values = new HashMap<>();
-        model = new HashMap<>();
     }
 
 //------------------------------Instance Methods------------------------------
 
     // --------------------private---------------------
 
-    private void reweight(double classification, int i) throws UntrainedModelException { // TODO reweights model after every layer
-        for (String key : inputKeys) {
-            if (!key.equalsIgnoreCase("class")) {
-                Double[] rangeCategories = null;
+    /**
+     * Weights data points in model after every training data instance
+     * @param classification
+     * @param i
+     * @throws UntrainedModelException if model has not been trained (train() not called)
+     */
+    private void reweight(double classification, int i) throws UntrainedModelException {
+        for (int keyIndex = 0; keyIndex < inputKeys.length; keyIndex++) {
+            if (!inputKeys[keyIndex].equalsIgnoreCase("class")) {
                 int indexOfClass = 0;
                 while (classification != possibleClasses[indexOfClass]) {
                     // check classification == i for all String i : class
                     indexOfClass++;
                 }
-                Double[] thisFrequency = null;
-                Double[] temp = model.get(key); // TODO what is temp?
-                double see_value = values.get(key)[i];
+                Double[] thisFrequency;
+                double see_value = values.get(inputKeys[keyIndex])[i];
 
-//            if (rangeFrequencies.get(key) == null) {
-//                rangeFrequencies.put(key, new Double[inputKeys.length][]); // TODO [classes][allDifferentQuantitative<Qual?>Attributes][RangesWithinEachCategory]
-//            }
-
-                if (values.get(key)[i] > 1.0) { // TODO this block
-                    rangeCategories = quanToQual(key);
+                Double[] thisRangeSet;
+                if (i == 0) {
+                    if (isQuan[keyIndex]) {
+                        thisRangeSet = getQuanRanges(inputKeys[keyIndex]);
+                    } else {
+                        thisRangeSet = getQualOptions(inputKeys[keyIndex]);
+                        // qualitative cats: 0.0 to 1/numOptions, 1/numOptions to 2/numOptions, ... n-1/numOptions to n/numOptions
+                    }
+                    rangeCategories.put(inputKeys[keyIndex], thisRangeSet);
                 } else {
-                    rangeCategories = new Double[]{0.5, 1.0}; // qualitative cats: 0-0.5, 0.5-1
+                    thisRangeSet = rangeCategories.get(inputKeys[keyIndex]);
                 }
 
-                if (rangeFrequencies.get(key)[indexOfClass] == null) {
-                    thisFrequency = new Double[rangeCategories.length]; // thisFrequency
+                if (rangeFrequencies.get(inputKeys[keyIndex])[indexOfClass] == null) {
+                    thisFrequency = new Double[thisRangeSet.length]; // thisFrequency
                     Arrays.fill(thisFrequency, 0.0);
                 } else {
-                    rangeCategories = rangeFrequencies.get(key)[indexOfClass];
+                    thisFrequency = rangeFrequencies.get(inputKeys[keyIndex])[indexOfClass];
                 }
 
-                for (int j = 1; j < rangeCategories.length; j++) {
-                    if (see_value > rangeCategories[j - 1] && see_value < rangeCategories[j]) {
-                        thisFrequency[j] = (see_value + thisFrequency[j] * numInstances - 1) / numInstances;
+                if (isQuan[keyIndex]) {
+                    for (int j = 0; j < thisRangeSet.length - 1; j++) {
+                        if (see_value > thisRangeSet[thisRangeSet.length - 1]) {
+                            thisFrequency[thisRangeSet.length - 1] = (1.0 + thisFrequency[thisRangeSet.length - 1] * (thisRangeSet.length - 1)) / (thisRangeSet.length);
+                            break;
+                        }
+                        if (see_value > thisRangeSet[j] && see_value < thisRangeSet[j + 1]) {
+                            thisFrequency[j] = (1.0 + thisFrequency[j] * (thisRangeSet.length - 1)) / (thisRangeSet.length);
+                            break;
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < thisRangeSet.length; j++) {
+                        if (see_value == thisRangeSet[j]) {
+                            thisFrequency[j] = (1.0 + thisFrequency[j] * (thisRangeSet.length - 1)) / (thisRangeSet.length);
+                            break;
+                        }
                     }
                 }
-                if (!Double.isNaN(see_value)) {
-                    temp[indexOfClass] = (see_value + temp[indexOfClass] * (numInstances - 1)) / numInstances;
-                }
-                Double[][] rangeFreqAdjuster = rangeFrequencies.get(key);
+
+                Double[][] rangeFreqAdjuster = rangeFrequencies.get(inputKeys[keyIndex]);
                 rangeFreqAdjuster[indexOfClass] = thisFrequency;
-                rangeFrequencies.put(key, rangeFreqAdjuster);
-                model.put(key, temp);
+                rangeFrequencies.put(inputKeys[keyIndex], rangeFreqAdjuster);
             }
         }
     }
 
-    private Double[] quanToQual(String key) {  // TODO quanToQual is not creating categories correctly
+    /**
+     * Gets ranges for quantitative data
+     * @param key
+     * @return
+     */
+    private Double[] getQuanRanges(String key) {  // creates range categories for naive bayes model to use
         Pair<Double, Double> dimensions;
-        Double min = Double.MAX_VALUE;
-        Double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
         Double[] vals = values.get(key);
         for (Double i : vals) {
             if (min > i)
@@ -100,20 +119,43 @@ public class BasicNaiveBayes {
         }
         dimensions = new Pair(max - min, 1 + (Math.log(vals.length) / Math.log(2)));
         double classWidth = dimensions.val1 / dimensions.val2;
-        Double[] rangeCategories = new Double[dimensions.val2.intValue()];
-        for (int k = 0; k < rangeCategories.length; k++) {
+        Double[] rangeCategorySet = new Double[dimensions.val2.intValue() + 1];
+        for (int k = 0; k < rangeCategorySet.length; k++) {
             // 1st cat to nth cat
             // if (within this rangeClass) then range value = (1/dimensions.val2) * which class
-            rangeCategories[k] = ((1.0 + k) / dimensions.val2) + min; // lower bound == rangeCats[n-1]; upper bound == rangeCats[n]
+            rangeCategorySet[k] = min + (classWidth * (k)); // lower bound == rangeCats[n-1]; upper bound == rangeCats[n]
         }
-        return rangeCategories;
+        return rangeCategorySet;
+    }
+
+    private Double[] getQualOptions(String key) { // finds the possible classifications to be returned for each qualitative datapoint
+        ArrayList<Double> categorySet = new ArrayList<>();
+        Double[] vals = values.get(key);
+        for (int i = 0; i < vals.length; i++) {
+            if (categorySet.size() == 0) { // default, add 1 to array
+                int index = 0;
+                while (Double.isNaN(vals[index])) {
+                    index++;
+                }
+                categorySet.add(vals[index]);
+                i = index;
+            }
+            for (int j = 0; j < categorySet.size(); j++) {
+                if (vals[i].doubleValue() == categorySet.get(j).doubleValue() || Double.isNaN(vals[i].doubleValue())) { // look for repeats
+                    break;
+                }
+                if (j >= categorySet.size() - 1) { // if no repeats
+                    categorySet.add(vals[i]);
+                }
+            }
+        }
+        Double[] out = new Double[categorySet.size()];
+        categorySet.toArray(out);
+        Arrays.sort(out);
+        return out;
     }
 
     // --------------------public----------------------
-
-    public Map<String, Double[]> getModel() {
-        return model;
-    }
 
     public BasicNaiveBayes buildMap(String[] inputs, double[][] dataPts) {
         this.inputKeys = inputs;
@@ -131,24 +173,35 @@ public class BasicNaiveBayes {
     /**
      * Returns double value of highest likelihood class
      *
-     * @param keyChain
      * @param responses
      * @return
      */
-    public Double predictClass(String[] keyChain, Double[] responses) {
+    public Double predictClass(Double[] responses) {
         // need keyChain because keys will not be in the same order as this.inputKeys
         int numClasses = possibleClasses.length;
-        Double[] classProbs = new Double[numClasses];
+        Double[] classProbs = new Double[numClasses]; // TODO only 1.0 point to give per class; distribute it among frequencies
         Arrays.fill(classProbs, 1.0 / numClasses); // fill all indices with equal probability
-        for (int i = 0; i < responses.length; i++) { // TODO mod this to handle more than two inputs
-            for (int j = 0; j < classProbs.length; j++) {// numClasses possible
-                double model_j = model.get(keyChain[i])[j];
-                if (responses[i] == 1.0) { // TODO if class i double val then finalProb[i] = (finalProb[i] + model_i) / 2
-                    classProbs[j] = (classProbs[j] + model_j) / 2;
-                } else if (responses[i] == 0.0) {
-                    classProbs[j] = (classProbs[j] + (1 - model_j)) / 2;
+        for (int i = 0; i < responses.length; i++) { // iterates through responses in this instance
+            for (int j = 0; j < classProbs.length; j++) { // iterator for the probabilities of each class
+                Double[] model_j = rangeFrequencies.get(inputKeys[i])[j];
+
+                if (isQuan[i]) {
+                    for (int k = 0; k < rangeFrequencies.get(inputKeys[i])[j].length - 1; k++) { // iterates through each frequency and finds a match
+                        double thisAttr = rangeCategories.get(inputKeys[i])[k];
+                        double nextAttr = rangeCategories.get(inputKeys[i])[k + 1];
+                        if (responses[i] >= thisAttr && responses[i] < nextAttr) { // check range categories
+                            classProbs[j] = (classProbs[j] + model_j[k] * (values.get(inputKeys[i]).length - 1)) / values.get(inputKeys[i]).length;
+                            break;
+                        }
+                    }
                 } else {
-                    continue;
+                    for (int k = 0; k < rangeFrequencies.get(inputKeys[i])[j].length; k++) {
+                        double thisAttr = rangeCategories.get(inputKeys[i])[k];
+                        if (responses[i].doubleValue() == thisAttr) { // check attribute values
+                            classProbs[j] = (classProbs[j] + model_j[k] * (rangeCategories.get(inputKeys[i]).length - 1)) / (rangeCategories.get(inputKeys[i]).length);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -159,7 +212,7 @@ public class BasicNaiveBayes {
                 maxIndex = i;
                 max = classProbs[i];
             }
-        return possibleClasses[maxIndex];
+        return possibleClasses[maxIndex]; // returns the class with the highest likelihood score
     }
 
     /**
@@ -174,38 +227,12 @@ public class BasicNaiveBayes {
             // depth second (keyword iterator; steps through each keyword in an instance
             Double[] thisInstance = new Double[inputKeys.length - 1];
             for (int j0 = 0; j0 < inputKeys.length; j0++) {
-                if (inputKeys[j0].equalsIgnoreCase("class")) { // skip class attr
-                    continue;
-                } else {
+                if (!inputKeys[j0].equalsIgnoreCase("class")) { // skip class attr
                     thisInstance[j0] = values.get(inputKeys[j0])[i];
                 }
             }
             Double classification = values.get(inputKeys[inputKeys.length - 1])[i];
-            if (classification != 0.0 && classification != 1.0)
-                System.out.println("checkpoint");
-            // translate quantitative data into qualitative data
-            Double[] rangeCategories;
-            if (model.size() == 0) { // cannot reweight effectively till numInstances > 2
-                for (String j0 : inputKeys) {
-                    double firstValue = values.get(j0)[i]; // need to check for NaN on the first instance
-                    // check if value is qualitative. if quantitative, translate to qualitative (range-based classification)
-                    if (Double.isNaN(firstValue))
-                        firstValue = 1.0 / possibleClasses.length;
-                    else if (firstValue > 1.0) {
-                        rangeCategories = quanToQual(j0);
-                    }
-                    for (Double k : possibleClasses) {
-                        if (classification == k) {// isFirstClass
-                            Double[] temp = new Double[possibleClasses.length];
-                            Arrays.fill(temp, 1.0 / possibleClasses.length);
-                            temp[0] = k; // TODO hardcoded 0 vs i? // first value is the first possible class
-                            model.put(j0, temp);
-                        }
-                    }
-                }
-            } else { // reweight after every instance
-                reweight(classification, i);
-            }
+            reweight(classification, i);
         }
         return this;
     }
@@ -251,7 +278,6 @@ public class BasicNaiveBayes {
 
             List<Attribute> attr = Collections.list(data.enumerateAttributes());
 
-            String[] attrArray = new String[attr.size() + 1]; // last is for class
             Double[] testDataPtsArray = new Double[attr.size()];
 
             double countCorrect = 0.0, countIncorrect = 0.0;
@@ -261,14 +287,9 @@ public class BasicNaiveBayes {
                 for (int i = 0; i < temp.length - 1; i++) // deep copy double[] to Double[]
                     testDataPtsArray[i] = temp[i];
 
-                for (int i = 0; i < attr.size(); i++) {
-                    attrArray[i] = attr.get(i).name();
-                }
-
-                attrArray[attrArray.length - 1] = "Class";
-                Double finalProb = bnb.predictClass(attrArray, testDataPtsArray);
-                // TODO alter to accomodate >2 categories
-                if (data.get(outer).classValue() == finalProb) {
+                Double finalProb = bnb.predictClass(testDataPtsArray);
+                Double classValue = data.get(outer).classValue();
+                if (classValue.doubleValue() == finalProb.doubleValue()) {
                     countCorrect++;
                 } else {
                     countIncorrect++;
@@ -279,39 +300,6 @@ public class BasicNaiveBayes {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Alter UI as needed per dataset
-     *
-     * @param bnb
-     * @param ui
-     * @return
-     */
-    public static void voterPollUi(BasicNaiveBayes bnb, Scanner ui) {
-        System.out.println("Respond to the following prompts by typing 'y' or 'n' and hitting the <ENTER> key.");
-        String[] keyChain = bnb.model.keySet().toArray(new String[bnb.model.keySet().size()]);
-        Double[] responses = new Double[keyChain.length - 1];
-        for (int i = 0; i < responses.length; i++) {
-            if (keyChain[i].equals("Class"))
-                responses[i] = Double.NaN;
-            else {
-                System.out.print(keyChain[i] + ": ");
-                String response = ui.nextLine();
-                if (response.equalsIgnoreCase("y")) {
-                    responses[i] = 1.0;
-                } else if (response.equalsIgnoreCase("n")) {
-                    responses[i] = 0.0;
-                } else {
-                    responses[i] = 0.5;
-                }
-            }
-        }
-        Double finalProb = bnb.predictClass(keyChain, responses);
-//        Pair<String, Double> result = (finalProb[1] < finalProb[0]) ? new Pair<>("Republican", finalProb[0] / (finalProb[0] + finalProb[1]))
-//                : new Pair<>("Democrat", finalProb[1] / (finalProb[0] + finalProb[1]));
-//        System.out.println("Based on your responses, I am " + String.format("%.2f", result.val2 * 100)
-//                + "% sure you identify as a " + result.val1);
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
@@ -358,22 +346,37 @@ public class BasicNaiveBayes {
                 classes.add(temp[i]);
             }
         }
+
+        Enumeration<Attribute> enumAttr = data.enumerateAttributes();
+        if (bnb.isQuan == null) {
+            bnb.isQuan = new Boolean[bnb.inputKeys.length];
+            Arrays.fill(bnb.isQuan, false);
+        }
+        int indexOfAttr = 0;
+        while (enumAttr.hasMoreElements()) {
+            if (enumAttr.nextElement().isNumeric()){
+                bnb.isQuan[indexOfAttr] = true;
+            }
+            indexOfAttr++;
+        }
+
         bnb.possibleClasses = new Double[classes.size()];
         classes.toArray(bnb.possibleClasses);
-        bnb.rangeFrequencies = new HashMap<String, Double[][]>();
+        bnb.rangeFrequencies = new HashMap<>();
+        bnb.rangeCategories = new HashMap<>();
         for (String key : bnb.inputKeys) {
             if (!key.equalsIgnoreCase("class")) {
-                bnb.rangeFrequencies.put(key, new Double[bnb.possibleClasses.length][]); // TODO [quantitative categories][classes][frequency of each category]
+                bnb.rangeCategories.put(key, new Double[bnb.possibleClasses.length]);    // [classes][quantitative categories]
+                bnb.rangeFrequencies.put(key, new Double[bnb.possibleClasses.length][]); // [classes][quantitative categories][frequency of each category]
             }
         }
         return bnb;
     }
 
     public static void main(String[] args) {
-        System.out.println(System.getProperty("user.dir"));
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "voting.arff"; // train
-        args[1] = utilities.Utils.FILESPACE + "voting.arff"; // test
+        args[0] = utilities.Utils.FILESPACE + "weight_height.arff"; // train
+        args[1] = utilities.Utils.FILESPACE + "weight_height.arff"; // test
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
@@ -382,11 +385,7 @@ public class BasicNaiveBayes {
             e.printStackTrace();
         }
         System.out.println("Done training model: " + bnb.toString());
-        Scanner ui = new Scanner(System.in);
 
         predictClassFile(bnb, new File(args[1]));
-
-        ui.close();
-
     }
 }
