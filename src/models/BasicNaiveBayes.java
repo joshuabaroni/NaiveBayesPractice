@@ -14,23 +14,26 @@ import java.util.*;
 
 /**
  * NB Model I wrote to help me understand better how the NB algorithm works.
- *
+ * Ideas for improvement:
+ *  - Run this alongside a KNN algo and pick the optimal output
+ *  - Change from naive to comparison of input | input in addition to input | output
  * @author Josh Baroni
  */
 public class BasicNaiveBayes {
 
-    //    private int NUM_DATA_INST_PER_LAYER = 10; // TODO less datapoints : more extreme weighting
     private String[] inputKeys; // keys correspond to attribute
     private Double[] possibleClasses;
     private Map<String, Double[]> rangeCategories; // [key/Attr][range] class not needed
     private Map<String, Double[][]> rangeFrequencies; // [key/Attr][class][frequencyOfEachRange]
     private Map<String, Double[]> values; // keys are paired with their respective values. R = 1.0, D = 0.0
     private Boolean[] isQuan; // if true, this attribute is quantitative, else this attribute is qualitative
+    private String classKey;
     public int numInstances = 0;
 //--------------------------------Constructors--------------------------------    
 
-    public BasicNaiveBayes() {
+    public BasicNaiveBayes(String classKey) {
         values = new HashMap<>();
+        this.classKey = classKey;
     }
 
 //------------------------------Instance Methods------------------------------
@@ -45,7 +48,7 @@ public class BasicNaiveBayes {
      */
     private void reweight(double classification, int i) throws UntrainedModelException {
         for (int keyIndex = 0; keyIndex < inputKeys.length; keyIndex++) {
-            if (!inputKeys[keyIndex].equalsIgnoreCase("class")) {
+            if (!inputKeys[keyIndex].equalsIgnoreCase(classKey)) {
                 int indexOfClass = 0;
                 while (classification != possibleClasses[indexOfClass]) {
                     // check classification == i for all String i : class
@@ -57,7 +60,7 @@ public class BasicNaiveBayes {
                 Double[] thisRangeSet;
                 if (i == 0) {
                     if (isQuan[keyIndex]) {
-                        thisRangeSet = getQuanRanges(inputKeys[keyIndex]);
+                        thisRangeSet = getQuanRangesDouble(inputKeys[keyIndex]);
                     } else {
                         thisRangeSet = getQualOptions(inputKeys[keyIndex]);
                         // qualitative cats: 0.0 to 1/numOptions, 1/numOptions to 2/numOptions, ... n-1/numOptions to n/numOptions
@@ -82,7 +85,7 @@ public class BasicNaiveBayes {
                         }
                         if (see_value > thisRangeSet[j] && see_value < thisRangeSet[j + 1]) {
                             thisFrequency[j] = (1.0 + thisFrequency[j] * (thisRangeSet.length - 1)) / (thisRangeSet.length);
-                            break;
+                            break; // reweight by number of each attribute, not total instances
                         }
                     }
                 } else {
@@ -102,11 +105,11 @@ public class BasicNaiveBayes {
     }
 
     /**
-     * Gets ranges for quantitative data
+     * Gets ranges for quantitative double data
      * @param key
      * @return
      */
-    private Double[] getQuanRanges(String key) {  // creates range categories for naive bayes model to use
+    private Double[] getQuanRangesDouble(String key) {  // handle real data types
         Pair<Double, Double> dimensions;
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
@@ -128,7 +131,7 @@ public class BasicNaiveBayes {
         return rangeCategorySet;
     }
 
-    private Double[] getQualOptions(String key) { // finds the possible classifications to be returned for each qualitative datapoint
+    private Double[] getQualOptions(String key) { // handle enumerations, nominal classes, boolean data types
         ArrayList<Double> categorySet = new ArrayList<>();
         Double[] vals = values.get(key);
         for (int i = 0; i < vals.length; i++) {
@@ -179,10 +182,12 @@ public class BasicNaiveBayes {
     public Double predictClass(Double[] responses) {
         // need keyChain because keys will not be in the same order as this.inputKeys
         int numClasses = possibleClasses.length;
-        Double[] classProbs = new Double[numClasses]; // TODO only 1.0 point to give per class; distribute it among frequencies
+        Double[] classProbs = new Double[numClasses];
         Arrays.fill(classProbs, 1.0 / numClasses); // fill all indices with equal probability
         for (int i = 0; i < responses.length; i++) { // iterates through responses in this instance
             for (int j = 0; j < classProbs.length; j++) { // iterator for the probabilities of each class
+                if (inputKeys[i].equalsIgnoreCase(classKey))
+                    break;
                 Double[] model_j = rangeFrequencies.get(inputKeys[i])[j];
 
                 if (isQuan[i]) {
@@ -222,12 +227,12 @@ public class BasicNaiveBayes {
      */
     public BasicNaiveBayes train() {
         // width first (instance iterator; covers all keywords in a model instance)
-        for (int i = 0; i < values.get("Class").length; i++) {
+        for (int i = 0; i < values.get(classKey).length; i++) {
             numInstances++;
             // depth second (keyword iterator; steps through each keyword in an instance
             Double[] thisInstance = new Double[inputKeys.length - 1];
             for (int j0 = 0; j0 < inputKeys.length; j0++) {
-                if (!inputKeys[j0].equalsIgnoreCase("class")) { // skip class attr
+                if (!inputKeys[j0].equalsIgnoreCase(classKey)) { // skip class attr
                     thisInstance[j0] = values.get(inputKeys[j0])[i];
                 }
             }
@@ -257,7 +262,7 @@ public class BasicNaiveBayes {
     // ----------------public-------------------
 
     /**
-     * Runs testfile alongside trained model
+     * Runs testfile alongside trained model and provides output
      *
      * @param bnb
      * @param file
@@ -312,7 +317,7 @@ public class BasicNaiveBayes {
             throw new UnsupportedFiletypeException();
         }
 
-        BasicNaiveBayes bnb = new BasicNaiveBayes();
+        BasicNaiveBayes bnb = new BasicNaiveBayes(data.attribute(data.classIndex()).name());
         List<Attribute> attr = Collections.list(data.enumerateAttributes());
 
         // changes A<S> attr to S[]
@@ -330,10 +335,10 @@ public class BasicNaiveBayes {
             attrArray[i] = attr.get(i).name();
         }
 
-        attrArray[attrArray.length - 1] = "Class";
+        attrArray[attrArray.length - 1] = bnb.classKey;
         bnb.buildMap(attrArray, dataPtsArray);
 
-        Double[] temp = bnb.values.get("Class");
+        Double[] temp = bnb.values.get(bnb.classKey);
         ArrayList<Double> classes = new ArrayList<>();
         for (int i = 0; i < temp.length; i++) { // gets 1 of each variety of classes so we know what classes are possible
             boolean flag = false;
@@ -365,7 +370,7 @@ public class BasicNaiveBayes {
         bnb.rangeFrequencies = new HashMap<>();
         bnb.rangeCategories = new HashMap<>();
         for (String key : bnb.inputKeys) {
-            if (!key.equalsIgnoreCase("class")) {
+            if (!key.equalsIgnoreCase(bnb.classKey)) {
                 bnb.rangeCategories.put(key, new Double[bnb.possibleClasses.length]);    // [classes][quantitative categories]
                 bnb.rangeFrequencies.put(key, new Double[bnb.possibleClasses.length][]); // [classes][quantitative categories][frequency of each category]
             }
@@ -373,10 +378,14 @@ public class BasicNaiveBayes {
         return bnb;
     }
 
+    /**
+     * Main method; inits and provides arguments.
+     * @param args first argument = destination of train file, second argument = destination of test file
+     */
     public static void main(String[] args) {
         args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "weight_height.arff"; // train
-        args[1] = utilities.Utils.FILESPACE + "weight_height.arff"; // test
+        args[0] = utilities.Utils.FILESPACE + "/regression/detroit.arff"; // train
+        args[1] = utilities.Utils.FILESPACE + "/regression/detroit.arff"; // test
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {
