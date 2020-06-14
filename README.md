@@ -25,9 +25,11 @@ Basic Naive Bayes ML model written in Java
 - This dataset trains the model to recognize acceptable compensations for labor.
 - Accuracy with this dataset: ~80% correct
 
-### Weather Prediction
-- This dataset trains the model to make a decision on whether the weather ;) is good enough to go outside in.
-- Accuracy with this dataset: ~64% correct
+### Iris
+- The Iris flower data set is a multivariate data set introduced by the British statistician and biologist Ronald Fisher in his 1936 paper The use of multiple measurements in taxonomic problems.
+- It is sometimes called Anderson's Iris data set because Edgar Anderson collected the data to quantify the morphologic variation of Iris flowers of three related species.
+- The data set consists of samples from each of three species of Iris (Iris Setosa, Iris virginica, and Iris versicolor). Four features were measured from each sample: the length and the width of the sepals and petals, in centimeters.
+- Accuracy with this dataset: 95% correct
 
 ### Voting Data
 - The current model can be trained to recognize a voter's political party preference, based on their answers to a 16-question poll.
@@ -36,7 +38,9 @@ Basic Naive Bayes ML model written in Java
 - Training data used is from the [1984 voter census](https://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
 - Accuracy with this dataset: ~85% correct
 
-### TODO: Other datasets included in the file
+### Other datasets are included in the file
+- Model handles most typical NB classification examples well, with at least 70% accuracy
 
 ## Technologies
 - Based off of analysis of the [Weka Naive Bayes model](https://weka.sourceforge.io/doc.dev/weka/classifiers/bayes/NaiveBayes.html)
+- Taken from the [UCI machine learning repository](https://archive.ics.uci.edu/ml/index.php)
