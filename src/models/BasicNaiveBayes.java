@@ -172,6 +172,18 @@ public class BasicNaiveBayes {
         }
         return this;
     }
+    
+    public Map<String, List<Object>> getFullModel() {
+    	// where list contains either double[] or double[][] for each key
+    	Map<String, List<Object>> out = new HashMap<>();
+    	for (String str : inputKeys) {
+    		List<Object> temp = new ArrayList<>();
+    		temp.add(rangeCategories.get(str));
+    		temp.add(rangeFrequencies.get(str));
+    		out.put(str, temp);
+    	}
+    	return out;
+    }
 
     /**
      * Returns double value of highest likelihood class
@@ -270,8 +282,9 @@ public class BasicNaiveBayes {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static void predictClassFile(BasicNaiveBayes bnb, File file) {
-        Instances data;
+    public static String predictClassFile(BasicNaiveBayes bnb, File file) {
+        String out = "";
+    	Instances data;
         try {
             if (FilenameUtils.getExtension(file.getName()).equals("arff")) {
                 data = loadArff(file);
@@ -300,11 +313,12 @@ public class BasicNaiveBayes {
                     countIncorrect++;
                 }
             }
-            System.out.println("Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
-                    + "\nPercent Accuracy for model: " + String.format("%.1f", (countCorrect / (countCorrect + countIncorrect)) * 100.0) + "%");
+            out += "Count correct: " + countCorrect + "\nCount incorrect: " + countIncorrect
+                    + "\nPercent Accuracy for model: " + String.format("%.1f", (countCorrect / (countCorrect + countIncorrect)) * 100.0) + "%";
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return out;
     }
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
@@ -376,25 +390,5 @@ public class BasicNaiveBayes {
             }
         }
         return bnb;
-    }
-
-    /**
-     * Main method; inits and provides arguments.
-     * @param args first argument = destination of train file, second argument = destination of test file
-     */
-    public static void main(String[] args) {
-        args = new String[2];
-        args[0] = utilities.Utils.FILESPACE + "/regression/detroit.arff"; // train
-        args[1] = utilities.Utils.FILESPACE + "/regression/detroit.arff"; // test
-        File testDataFile = new File(args[0]);
-        BasicNaiveBayes bnb = null;
-        try {
-            bnb = naiveBayesBuilder(testDataFile).train();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Done training model: " + bnb.toString());
-
-        predictClassFile(bnb, new File(args[1]));
     }
 }
