@@ -43,52 +43,62 @@ public class NBController {
         	case "hepatitis":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/hepatitis/hepatitis.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/hepatitis/hepatitis.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "iris":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/iris/iris.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/iris/iris_test.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "labor_negotiation":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/labor_negotiation/labor_negotiations.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/labor_negotiation/labor_negotiations.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "mushrooms":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/mushrooms/mushroom.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/mushrooms/mushroom.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "soybeans": // TODO
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/soybeans/soybeans.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/soybeans/soybeans.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "sponge":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/sponge/sponge.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/sponge/sponge.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "sick":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/sick/sick.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/sick/sick.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "weight_height":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/weight_height/weight_height.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/weight_height/weight_height.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "weather":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/weather/weather.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/weather/weather.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	case "voting":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/voting/voting.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/voting/voting.arff"; // test
-	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
+	            re = new ResponseEntity<String>("Train data set to: " + setFilePath[0]
+	            		+ "\nTest file set to: " + setFilePath[1], HttpStatus.ACCEPTED);
 	            break;
         	default:
         		re = new ResponseEntity<String>("To set a file: <host_url>/set_file?filename=<fileKey>", HttpStatus.BAD_REQUEST);
