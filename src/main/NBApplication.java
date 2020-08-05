@@ -10,8 +10,8 @@ public class NBApplication {
      * Main method; inits and provides arguments.
      * @param args first argument = destination of train file, second argument = destination of test file
      */
-    public static void main(String[] args) {
-        args = new String[2];
+    public static void deprecated() {
+        String[] args = new String[2];
         args[0] = utilities.Utils.FILESPACE + "/sick/sick.arff"; // train
         args[1] = utilities.Utils.FILESPACE + "/sick/sick.arff"; // test
         File testDataFile = new File(args[0]);
