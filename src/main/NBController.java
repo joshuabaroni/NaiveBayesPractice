@@ -35,11 +35,11 @@ public class NBController {
     }
     
     // Eventually will allow multipart file upload to Ai model
-	@RequestMapping(value="/set_file/{filename}", method=RequestMethod.POST)
-	public ResponseEntity<String> fileSet(@RequestParam String filename) {
+	@RequestMapping(value="/set_file", method=RequestMethod.POST)
+	public ResponseEntity<String> fileSet(@RequestParam String fileKey) {
         ResponseEntity<String> re = null;
         // TODO check map instead; improves scalability
-		switch(filename) {
+		switch(fileKey) {
         	case "hepatitis":
 	        	setFilePath[0] = utilities.Utils.FILESPACE + "/hepatitis/hepatitis.arff"; // train
 	            setFilePath[1] = utilities.Utils.FILESPACE + "/hepatitis/hepatitis.arff"; // test
@@ -91,7 +91,7 @@ public class NBController {
 	            re = new ResponseEntity<String>(HttpStatus.ACCEPTED);
 	            break;
         	default:
-        		re = new ResponseEntity<String>("No file found corresponding to that filename", HttpStatus.BAD_REQUEST);
+        		re = new ResponseEntity<String>("To set a file: <host_url>/set_file?filename=<fileKey>", HttpStatus.BAD_REQUEST);
         		break;
 		}
         if (re.getStatusCode().value() < 300) {
@@ -134,7 +134,7 @@ public class NBController {
 //----------------------private static builders----------------------
 	/**
 	 * TODO for now hardcoded
-	 * @return List<Map> containing filenames of approved arff files
+	 * @return List<Map> containing fileKeys of approved arff files
 	 * and a short description about each one
 	 */
 	private static Map<String, String> buildFileList() {
@@ -143,7 +143,7 @@ public class NBController {
 				"A collection of symptom data to classify the patient as having hepatitis||!hepatitis");
 		map.put("iris",
 				"The classic ML iris dataset");
-		map.put("mushroom",
+		map.put("mushrooms",
 				"Fungal Species classification based on feature data");
 		map.put("labor_negotiation",
 				"Final settlements in labor negotitions in Canadian industry, Nov 1988");
