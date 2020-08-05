@@ -36,7 +36,7 @@ public class NBController {
     
     // Eventually will allow multipart file upload to Ai model
 	@RequestMapping(value="/set_file", method=RequestMethod.POST)
-	public ResponseEntity<String> fileSet(@RequestParam String fileKey) {
+	public ResponseEntity<String> fileSet(@RequestParam(defaultValue="mushrooms") String fileKey) {
         ResponseEntity<String> re = null;
         // TODO check map instead; improves scalability
 		switch(fileKey) {
