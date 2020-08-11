@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import models.BasicNaiveBayes;
 
-@CrossOrigin(origins="http://localhost:3000, https://joshuabaroni.github.io")
+//@CrossOrigin(origins="http://localhost:3000")
+@CrossOrigin(origins="https://joshuabaroni.github.io")
 @RestController
 public class NBController {
 	
