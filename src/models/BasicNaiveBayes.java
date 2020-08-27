@@ -173,7 +173,8 @@ public class BasicNaiveBayes {
         return this;
     }
     
-    public Map<String, List<Object>> getFullModel() {
+    @Deprecated
+    public Map<String, List<Object>> getModel() {
     	// where list contains either double[] or double[][] for each key
     	Map<String, List<Object>> out = new HashMap<>();
     	for (String str : inputKeys) {
@@ -181,6 +182,22 @@ public class BasicNaiveBayes {
     		temp.add(rangeCategories.get(str));
     		temp.add(rangeFrequencies.get(str));
     		out.put(str, temp);
+    	}
+    	return out;
+    }
+    
+    public Map<String, Object> getModelRanges() {
+    	Map<String, Object> out = new HashMap<>();
+    	for (String str : inputKeys) {
+    		out.put(str, rangeCategories.get(str));
+    	}
+    	return out;
+    }
+    
+    public Map<String, Object> getModelFrequencies() {
+    	Map<String, Object> out = new HashMap<>();
+    	for (String str : inputKeys) {
+    		out.put(str, rangeFrequencies.get(str));
     	}
     	return out;
     }

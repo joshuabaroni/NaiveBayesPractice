@@ -114,14 +114,24 @@ public class NBController {
         return re;
 	}
 	
-	@RequestMapping(value="/get_model", method=RequestMethod.GET)
-	public Map<String, List<Object>> getModel() {
+	@RequestMapping(value="/get_model_ranges", method=RequestMethod.GET)
+	public Map<String, Object> getModelRanges() {
         try {
             bnb = BasicNaiveBayes.naiveBayesBuilder(testDataFile).train();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return bnb.getFullModel();
+        return bnb.getModelRanges();
+	}
+	
+	@RequestMapping(value="/get_model_frequencies", method=RequestMethod.GET)
+	public Map<String, Object> getModelFrequencies() {
+        try {
+            bnb = BasicNaiveBayes.naiveBayesBuilder(testDataFile).train();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bnb.getModelFrequencies();
 	}
 	
 	@RequestMapping(value="/get_model_accuracy", method=RequestMethod.GET)
