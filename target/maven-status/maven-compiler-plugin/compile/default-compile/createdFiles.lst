@@ -1,0 +1,10 @@
+main\java\common\Pair.class
+main\java\exceptions\UntrainedModelException.class
+main\java\configs\SpringFoxConfig.class
+main\java\exceptions\InvalidDataValueException.class
+main\java\controllers\NBController.class
+main\java\NBApplication.class
+main\java\models\BasicNaiveBayes.class
+main\java\configs\WebConfig.class
+main\java\NBApi.class
+main\java\exceptions\UnsupportedFiletypeException.class
