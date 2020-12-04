@@ -1,10 +1,8 @@
-package main.java.services;
+package com.naivebayes.services;
 
-import main.java.exceptions.InvalidDataValueException;
-import main.java.models.BasicNaiveBayes;
+import com.naivebayes.exceptions.InvalidDataValueException;
+import com.naivebayes.models.BasicNaiveBayes;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -135,6 +133,7 @@ public class NBService {
             case "custom":
             case "":
                 out = "Train data set to custom traindata file upload";
+                // TODO set to uploaded file
                 break;
             default:
                 throw new InvalidDataValueException();

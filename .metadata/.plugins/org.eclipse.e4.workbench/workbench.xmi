@@ -1470,9 +1470,9 @@
     <tags>View</tags>
     <tags>categoryTag:General</tags>
   </descriptors>
-  <descriptors xmi:id="_Ri8n0I_LEeqy64Rl5RkIfA" elementId="org.eclipse.wst.common.snippets.internal.ui.SnippetsView" label="Snippets" iconURI="platform:/plugin/org.eclipse.wst.common.snippets/icons/snippets_view.gif" tooltip="" category="General" closeable="true" contributionURI="bundleclass://org.eclipse.ui.workbench/org.eclipse.ui.internal.e4.compatibility.CompatibilityView">
-    <persistedState key="originalCompatibilityViewClass" value="org.eclipse.wst.common.snippets.internal.ui.SnippetsView"/>
-    <persistedState key="originalCompatibilityViewBundle" value="org.eclipse.wst.common.snippets"/>
+  <descriptors xmi:id="_Ri8n0I_LEeqy64Rl5RkIfA" elementId="org.eclipse.wst.com.naivebayes.common.snippets.internal.ui.SnippetsView" label="Snippets" iconURI="platform:/plugin/org.eclipse.wst.com.naivebayes.common.snippets/icons/snippets_view.gif" tooltip="" category="General" closeable="true" contributionURI="bundleclass://org.eclipse.ui.workbench/org.eclipse.ui.internal.e4.compatibility.CompatibilityView">
+    <persistedState key="originalCompatibilityViewClass" value="org.eclipse.wst.com.naivebayes.common.snippets.internal.ui.SnippetsView"/>
+    <persistedState key="originalCompatibilityViewBundle" value="org.eclipse.wst.com.naivebayes.common.snippets"/>
     <tags>View</tags>
     <tags>categoryTag:General</tags>
   </descriptors>
@@ -2421,7 +2421,7 @@
   </commands>
   <commands xmi:id="_Qif3lo_LEeqy64Rl5RkIfA" elementId="org.eclipse.ui.project.properties" commandName="Properties" description="Display the properties of the selected item's project " category="_QiROCo_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Qif3l4_LEeqy64Rl5RkIfA" elementId="org.eclipse.egit.ui.history.CompareVersionsInTree" commandName="Compare in Tree" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
-  <commands xmi:id="_Qif3mI_LEeqy64Rl5RkIfA" elementId="org.eclipse.epp.package.common.contribute" commandName="Contribute" description="Contribute to the development and success of the Eclipse IDE!" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
+  <commands xmi:id="_Qif3mI_LEeqy64Rl5RkIfA" elementId="org.eclipse.epp.package.com.naivebayes.common.contribute" commandName="Contribute" description="Contribute to the development and success of the Eclipse IDE!" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Qif3mY_LEeqy64Rl5RkIfA" elementId="org.eclipse.ui.edit.text.select.columnPrevious" commandName="Select Previous Column" description="Select the previous column" category="_QiRN-Y_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Qif3mo_LEeqy64Rl5RkIfA" elementId="org.eclipse.jdt.ui.correction.extractLocalNotReplaceOccurrences.assist" commandName="Quick Assist - Extract local variable" description="Invokes quick assist and selects 'Extract local variable'" category="_QiR1Co_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Qif3m4_LEeqy64Rl5RkIfA" elementId="org.eclipse.egit.ui.RepositoriesToggleBranchHierarchy" commandName="Toggle Branch Representation" category="_QiR1Bo_LEeqy64Rl5RkIfA"/>
@@ -2573,7 +2573,7 @@
     <parameters xmi:id="_QihFmI_LEeqy64Rl5RkIfA" elementId="path" name="Path"/>
   </commands>
   <commands xmi:id="_QihFmY_LEeqy64Rl5RkIfA" elementId="org.eclipse.ui.help.aboutAction" commandName="About" description="Open the about dialog" category="_QiROCY_LEeqy64Rl5RkIfA"/>
-  <commands xmi:id="_QihFmo_LEeqy64Rl5RkIfA" elementId="org.eclipse.wst.common.project.facet.ui.ConvertProjectToFacetedForm" commandName="Convert to Faceted Form..." category="_QiROA4_LEeqy64Rl5RkIfA"/>
+  <commands xmi:id="_QihFmo_LEeqy64Rl5RkIfA" elementId="org.eclipse.wst.com.naivebayes.common.project.facet.ui.ConvertProjectToFacetedForm" commandName="Convert to Faceted Form..." category="_QiROA4_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_QihFm4_LEeqy64Rl5RkIfA" elementId="org.eclipse.jdt.ui.edit.text.java.annotate.classFile" commandName="Annotate Class File" description="Externally add Annotations to a Class File." category="_QiR1Co_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_QihFnI_LEeqy64Rl5RkIfA" elementId="org.eclipse.egit.ui.team.stash.create" commandName="Stash Changes..." category="_QiR1Bo_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_QihFnY_LEeqy64Rl5RkIfA" elementId="org.eclipse.wst.jsdt.ui.edit.text.java.replace.invocations" commandName="Replace Invocations" description="Replace invocations of the selected function" category="_QiR1D4_LEeqy64Rl5RkIfA"/>
@@ -2778,7 +2778,7 @@
   <commands xmi:id="_Rfz0QY_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::org.eclipse.mylyn.tasks.ui.actions.view/org.eclipse.mylyn.context.ui.actions.tasklist.focus" commandName="Focus on Workweek" description="Focus on Workweek" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rfz0Qo_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::breakpointsViewActions/org.eclipse.wst.jsdt.debug.ui.add.scriptload.breakpoint" commandName="Add Script Load Breakpoint" description="Add Script Load Breakpoint" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rfz0Q4_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::breakpointsViewActions/org.eclipse.jdt.debug.ui.breakpointViewActions.ShowQualified" commandName="Suspend For All Script Loads" description="Suspends when any script is loaded" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
-  <commands xmi:id="_Rf0bUI_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::breakpointsViewActions/org.eclipse.wst.jsdt.debug.ui.suspend.on.exceptions" commandName="Suspend On JavaScript main.java.Exceptions" description="Suspend on all JavaScript exceptions" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
+  <commands xmi:id="_Rf0bUI_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::breakpointsViewActions/org.eclipse.wst.jsdt.debug.ui.suspend.on.com.naivebayes.exceptions" commandName="Suspend On JavaScript main.java.Exceptions" description="Suspend on all JavaScript com.naivebayes.exceptions" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rf0bUY_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::debugViewActions/org.eclipse.wst.jsdt.debug.ui.show.all.scripts" commandName="Show All Scripts" description="Shows or hides all scripts loaded in the visible targets" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rf0bUo_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::variableViewActions/org.eclipse.wst.jsdt.debug.ui.variableview.show.functions" commandName="Show function variables" description="Show or hide function variables" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rf0bU4_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::variableViewActions/org.eclipse.wst.jsdt.debug.ui.variableview.show.this" commandName="Show 'this' variable" description="Show or hide the this variable" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
@@ -2786,7 +2786,7 @@
   <commands xmi:id="_Rf1CYY_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::org.eclipse.ui.articles.action.contribution.view/org.eclipse.wst.wsi.ui.internal.actions.actionDelegates.ValidateWSIProfileActionDelegate" commandName="WS-I Profile Validator" description="Validate WS-I Message Log File" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <commands xmi:id="_Rf1CYo_LEeqy64Rl5RkIfA" elementId="AUTOGEN:::mnita.ansiconsole.viewConsoleClickableIcon/mnita.ansiconsole.AnsiConsoleClickIconAction" commandName="Enable/disable Ansi Console" category="_QiR1Do_LEeqy64Rl5RkIfA"/>
   <addons xmi:id="_QgGqxo_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.core.commands.service" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
-  <addons xmi:id="_QgGqx4_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.ui.contexts.service" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
+  <addons xmi:id="_QgGqx4_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.ui.contexts.service" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.ui.com.naivebayes.services/org.eclipse.e4.ui.com.naivebayes.services.ContextServiceAddon"/>
   <addons xmi:id="_QgGqyI_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.ui.bindings.service" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>
   <addons xmi:id="_QgGqyY_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.ui.workbench.commands.model" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.ui.workbench/org.eclipse.e4.ui.internal.workbench.addons.CommandProcessingAddon"/>
   <addons xmi:id="_QgGqyo_LEeqy64Rl5RkIfA" elementId="org.eclipse.e4.ui.workbench.contexts.model" contributorURI="platform:/plugin/org.eclipse.platform" contributionURI="bundleclass://org.eclipse.e4.ui.workbench/org.eclipse.e4.ui.internal.workbench.addons.ContextProcessingAddon"/>

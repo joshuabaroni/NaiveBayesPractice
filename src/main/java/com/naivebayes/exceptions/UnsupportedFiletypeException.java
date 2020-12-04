@@ -1,4 +1,4 @@
-package main.java.exceptions;
+package com.naivebayes.exceptions;
 
 import org.springframework.beans.factory.annotation.Value;
 

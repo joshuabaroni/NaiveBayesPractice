@@ -1,9 +1,9 @@
-package main.java.models;
+package com.naivebayes.models;
 
-import main.java.exceptions.UnsupportedFiletypeException;
-import main.java.exceptions.UntrainedModelException;
+import com.naivebayes.exceptions.UnsupportedFiletypeException;
+import com.naivebayes.exceptions.UntrainedModelException;
 import org.apache.commons.io.FilenameUtils;
-import main.java.common.Pair;
+import com.naivebayes.common.Pair;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;

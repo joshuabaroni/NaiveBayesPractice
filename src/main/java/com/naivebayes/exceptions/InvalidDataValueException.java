@@ -1,4 +1,4 @@
-package main.java.exceptions;
+package com.naivebayes.exceptions;
 
 /**
  * Thrown when model contains an invalid value

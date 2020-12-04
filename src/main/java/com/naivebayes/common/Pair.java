@@ -1,4 +1,4 @@
-package main.java.common;
+package com.naivebayes.common;
 
 public class Pair<T1, T2> {
     

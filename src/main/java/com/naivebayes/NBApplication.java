@@ -1,9 +1,9 @@
-package main.java;
+package com.naivebayes;
 
 import java.io.File;
 import java.io.IOException;
 
-import main.java.models.BasicNaiveBayes;
+import com.naivebayes.models.BasicNaiveBayes;
 
 public class NBApplication {
     /**
@@ -12,8 +12,8 @@ public class NBApplication {
      */
     public static void main(String[] args) {
 //        String[] args = new String[2];
-//        args[0] = main.java.common.Utils.FILESPACE + "/sick/sick.arff"; // train
-//        args[1] = main.java.common.Utils.FILESPACE + "/sick/sick.arff"; // test
+//        args[0] = main.java.com.naivebayes.common.Utils.FILESPACE + "/sick/sick.arff"; // train
+//        args[1] = main.java.com.naivebayes.common.Utils.FILESPACE + "/sick/sick.arff"; // test
         File testDataFile = new File(args[0]);
         BasicNaiveBayes bnb = null;
         try {

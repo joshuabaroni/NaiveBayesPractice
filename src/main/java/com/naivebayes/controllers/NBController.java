@@ -1,10 +1,10 @@
-package main.java.controllers;
+package com.naivebayes.controllers;
 
 import java.io.IOException;
 import java.util.Map;
 
-import main.java.exceptions.InvalidDataValueException;
-import main.java.services.NBService;
+import com.naivebayes.exceptions.InvalidDataValueException;
+import com.naivebayes.services.NBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,15 +43,15 @@ public class NBController {
 	 * ArrayList<Map>[1] = rangeFrequencies, ArrayList<Map>[2] = rangeValues and
 	 * String = model accuracy analysis
 	 */
-	public String getModelAccuracy() { // TODO return model
+	public String getModelAccuracy() {
 		return nbService.getModelAccuracy();
 	}
 
 	@RequestMapping(value="/file_upload", method=RequestMethod.POST)
 	public ResponseEntity fileUpload(@RequestBody MultipartFile dataset) {
 		try {
-			return new ResponseEntity<>("{\"message\":\"" + nbService.fileUpload(dataset) + "\"}", HttpStatus.ACCEPTED);
-		} catch (IOException ioe) { // TODO make more specified error codes
+			return new ResponseEntity<>("{\"message\":\"" + nbService.fileUpload(dataset) + "\"}", HttpStatus.OK);
+		} catch (IOException ioe) {
 			return new ResponseEntity<String>("{\"message\":\"File provided failed to upload; please check formatting.\"}", HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -59,7 +59,7 @@ public class NBController {
 	@RequestMapping(value="/set_file", method=RequestMethod.POST)
 	public ResponseEntity fileSet(@RequestParam(defaultValue="mushrooms") String fileKey) {
 		try {
-			return new ResponseEntity<>("{\"message\":\"" + nbService.fileSet(fileKey) + "\"}", HttpStatus.ACCEPTED);
+			return new ResponseEntity<>("{\"message\":\"" + nbService.fileSet(fileKey) + "\"}", HttpStatus.OK);
 		} catch (InvalidDataValueException idve) {
 			return new ResponseEntity<>("{\"message\":\"To set a file: <host_url>/set_file?filename=<fileKey>.\"}", HttpStatus.BAD_REQUEST);
 		}
