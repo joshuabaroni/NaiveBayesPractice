@@ -140,6 +140,9 @@ public class NBService {
                 throw new InvalidDataValueException();
         }
         if (setFilePath[0].length() == 0 || setFilePath[0] == null) {
+            throw new InvalidDataValueException();
+        }
+        else {
             testDataFile = new File(setFilePath[0]);
             trainDataFile = new File(setFilePath[1]);
         }
