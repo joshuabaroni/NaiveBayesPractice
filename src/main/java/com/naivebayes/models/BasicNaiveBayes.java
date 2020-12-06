@@ -340,7 +340,7 @@ public class BasicNaiveBayes {
 
     public static BasicNaiveBayes naiveBayesBuilder(File file) throws IOException {
         Instances data;
-        if (FilenameUtils.getExtension(file.getName()).equals("arff")) {
+        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("arff")) {
             data = loadArff(file);
         } else if (FilenameUtils.getExtension(file.getName()).equals("csv")) {
             data = loadCSV(file);

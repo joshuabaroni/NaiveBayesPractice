@@ -24,6 +24,8 @@ public class NBService {
     private BasicNaiveBayes bnb = null;
     private File testDataFile;
     private File trainDataFile;
+    private String customPath;
+    private boolean useCustom = false;
 
     /**
      * setFilePath[0] = train data file
@@ -70,6 +72,7 @@ public class NBService {
 
     public String fileSet(String fileKey) throws InvalidDataValueException {
         String out;
+        useCustom = false;
         switch(fileKey) {
             case "hepatitis":
                 setFilePath[0] = fileDir + "/hepatitis/hepatitis.arff"; // train
@@ -133,12 +136,16 @@ public class NBService {
             case "custom":
             case "":
                 out = "Train data set to custom traindata file upload";
-                // TODO set to uploaded file
+                useCustom = true;
                 break;
             default:
                 throw new InvalidDataValueException();
         }
-        if (setFilePath[0].length() == 0 || setFilePath[0] == null) {
+        if (useCustom) {
+            testDataFile = new File(customPath);
+            trainDataFile = new File(customPath);
+        }
+        else if (setFilePath[0].length() == 0 || setFilePath[0] == null) {
             throw new InvalidDataValueException();
         }
         else {
@@ -160,9 +167,8 @@ public class NBService {
         // TODO figure out which approach is optimal
 //        dataset.transferTo(filepath);
 
-        // sets the testDataFile to the custom filepath
-        testDataFile = new File(filepath.toString());
-        trainDataFile = new File(filepath.toString());
+        // sets the path of the uploaded file to the customPath global
+        customPath = filepath.toString();
         return "Successfully uploaded new training data.";
     }
 
